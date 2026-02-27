@@ -612,23 +612,26 @@
                     }
                 });
 
-                // 自动加载默认字体（使用 encodeURIComponent 避免中文路径 404）
+                // 自动加载默认字体（Vercel 友好：请求 ./font.otf）
                 (function loadDefaultFont() {
-                    try {
-                        paper.project.clear();
-                        new paper.PointText({
-                            point: paper.view.center,
-                            content: '正在从服务器下载预设字体 (方正大黑)...',
-                            fillColor: '#6b7280',
-                            fontSize: 20,
-                            justification: 'center'
-                        });
-                        paper.view.draw();
-                    } catch (e) {}
-                    const fontPath = './' + encodeURIComponent('方正大黑简体.otf');
+                    function showCanvasMessage(text) {
+                        try {
+                            paper.project.clear();
+                            new paper.PointText({
+                                point: paper.view.center,
+                                content: text,
+                                fillColor: '#6b7280',
+                                fontSize: 20,
+                                justification: 'center'
+                            });
+                            paper.view.draw();
+                        } catch (e) {}
+                    }
+                    showCanvasMessage('正在从服务器下载字体零件 (font.otf)...');
+                    const fontPath = './font.otf';
                     fetch(fontPath)
                         .then(res => {
-                            if (!res.ok) throw new Error(res.status);
+                            if (!res.ok) throw new Error('HTTP ' + res.status);
                             return res.arrayBuffer();
                         })
                         .then(buf => {
@@ -636,8 +639,8 @@
                             render();
                         })
                         .catch(err => {
-                            console.warn('默认字体加载失败（可尝试将仓库中的字体重命名为 font.otf 或手动载入）', fontPath, err);
-                            render();
+                            console.error('默认字体加载失败 (font.otf):', err);
+                            showCanvasMessage('请手动载入字体文件');
                         });
                 })();
 
