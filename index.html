@@ -464,309 +464,283 @@
 
         // 初始化函数（在库加载完成后执行）
         function initializeApp() {
-            try {
-                // 初始化 Paper.js 视口环境
-                if (typeof paper === 'undefined') {
-                    throw new Error('Paper.js 未加载');
+            paper.setup(UI.canvas); // 确保最先初始化画布
+
+            // 绑定所有滑块事件的快捷函数（使用回调函数更新变量）
+            const bindSlider = (id, setter) => {
+                const slider = document.getElementById(id + 'Slider');
+                const valInput = document.getElementById(id + 'Value');
+                if (!slider || !valInput) {
+                    console.warn(`找不到滑块元素: ${id}Slider 或 ${id}Value`);
+                    return;
                 }
-                paper.setup(UI.canvas);
+                const min = parseFloat(slider.min);
+                const max = parseFloat(slider.max);
+                const step = parseFloat(slider.step);
 
-                // 绑定所有滑块事件的快捷函数（使用回调函数更新变量）
-                const bindSlider = (id, setter) => {
-                    const slider = document.getElementById(id + 'Slider');
-                    const valInput = document.getElementById(id + 'Value');
-                    if (!slider || !valInput) {
-                        console.warn(`找不到滑块元素: ${id}Slider 或 ${id}Value`);
-                        return;
-                    }
-                    const min = parseFloat(slider.min);
-                    const max = parseFloat(slider.max);
-                    const step = parseFloat(slider.step);
+                function clampToBounds(val) {
+                    const n = parseFloat(val);
+                    if (isNaN(n)) return parseFloat(slider.value);
+                    return Math.min(max, Math.max(min, n));
+                }
+                function roundToStep(val) {
+                    if (step <= 0) return val;
+                    return Math.round(val / step) * step;
+                }
+                function applyAndRender(val) {
+                    val = clampToBounds(val);
+                    val = Math.min(max, Math.max(min, roundToStep(val)));
+                    slider.value = val;
+                    valInput.value = val;
+                    setter(val);
+                    render();
+                }
 
-                    function clampToBounds(val) {
-                        const n = parseFloat(val);
-                        if (isNaN(n)) return parseFloat(slider.value);
-                        return Math.min(max, Math.max(min, n));
-                    }
-                    function roundToStep(val) {
-                        if (step <= 0) return val;
-                        return Math.round(val / step) * step;
-                    }
-                    function applyAndRender(val) {
-                        val = clampToBounds(val);
-                        val = Math.min(max, Math.max(min, roundToStep(val)));
-                        slider.value = val;
-                        valInput.value = val;
-                        setter(val);
-                        render();
-                    }
-
-                    slider.addEventListener('input', () => {
-                        valInput.value = slider.value;
-                        setter(parseFloat(slider.value));
-                        render();
-                    });
-                    valInput.addEventListener('input', () => {
-                        const parsed = parseFloat(valInput.value);
-                        if (isNaN(parsed)) return;
-                        const safe = Math.min(max, Math.max(min, parsed));
-                        slider.value = safe;
-                        setter(safe);
-                        render();
-                    });
-                    valInput.addEventListener('blur', () => {
-                        applyAndRender(valInput.value);
-                    });
-                    valInput.addEventListener('change', () => {
-                        applyAndRender(valInput.value);
-                    });
-
+                slider.addEventListener('input', () => {
                     valInput.value = slider.value;
-                };
-                
-                bindSlider('width', (val) => { W = val; });
-                bindSlider('depth', (val) => { D = val; });
-                bindSlider('thickness', (val) => { T = val; });
-                bindSlider('sidePanelHeight', (val) => { sidePanelHeight = val; });
-                bindSlider('mainTenonWidth', (val) => { mainTenonWidth = val; });
-                bindSlider('sideTenonWidth', (val) => { sideTenonWidth = val; });
-                bindSlider('kerf', (val) => { kerf = val; });
-                bindSlider('innerXSpacing', (val) => { innerXSpacing = val; });
-                bindSlider('innerYSpacing', (val) => { innerYSpacing = val; });
-                bindSlider('offsetX', (val) => { offsetX = val; });
-                bindSlider('offsetY', (val) => { offsetY = val; });
-                
-                // 绑定连筋滑块
-                bindSlider('bridgeY', (val) => { bridgeY = val; });
-                bindSlider('bridgeHeight', (val) => { bridgeHeight = val; });
-                bindSlider('bridgeH_Length', (val) => { bridgeH_Length = val; });
-                bindSlider('bridgeH_OffsetX', (val) => { bridgeH_OffsetX = val; });
-                bindSlider('bridgeX', (val) => { bridgeX = val; });
-                bindSlider('bridgeWidth', (val) => { bridgeWidth = val; });
-                bindSlider('bridgeV_Length', (val) => { bridgeV_Length = val; });
-                bindSlider('bridgeV_OffsetY', (val) => { bridgeV_OffsetY = val; });
-                bindSlider('bridge2Y', (val) => { bridge2Y = val; });
-                bindSlider('bridge2Height', (val) => { bridge2Height = val; });
-                bindSlider('bridge2H_Length', (val) => { bridge2H_Length = val; });
-                bindSlider('bridge2H_OffsetX', (val) => { bridge2H_OffsetX = val; });
-                bindSlider('bridge2X', (val) => { bridge2X = val; });
-                bindSlider('bridge2Width', (val) => { bridge2Width = val; });
-                bindSlider('bridge2V_Length', (val) => { bridge2V_Length = val; });
-                bindSlider('bridge2V_OffsetY', (val) => { bridge2V_OffsetY = val; });
-
-                const bridgeH1El = document.getElementById('bridgeH1EnabledCheckbox');
-                const bridgeV1El = document.getElementById('bridgeV1EnabledCheckbox');
-                const bridgeH2El = document.getElementById('bridgeH2EnabledCheckbox');
-                const bridgeV2El = document.getElementById('bridgeV2EnabledCheckbox');
-                if (bridgeH1El) bridgeH1El.addEventListener('change', function() { bridgeH1Enabled = this.checked; render(); });
-                if (bridgeV1El) bridgeV1El.addEventListener('change', function() { bridgeV1Enabled = this.checked; render(); });
-                if (bridgeH2El) bridgeH2El.addEventListener('change', function() { bridgeH2Enabled = this.checked; render(); });
-                if (bridgeV2El) bridgeV2El.addEventListener('change', function() { bridgeV2Enabled = this.checked; render(); });
-
-                const radioButtons = document.querySelectorAll('input[name="baseType"]');
-                radioButtons.forEach(radio => {
-                    radio.addEventListener('change', (e) => {
-                        baseSupportType = e.target.value;
-                        render();
-                    });
+                    setter(parseFloat(slider.value));
+                    render();
+                });
+                valInput.addEventListener('input', () => {
+                    const parsed = parseFloat(valInput.value);
+                    if (isNaN(parsed)) return;
+                    const safe = Math.min(max, Math.max(min, parsed));
+                    slider.value = safe;
+                    setter(safe);
+                    render();
+                });
+                valInput.addEventListener('blur', () => {
+                    applyAndRender(valInput.value);
+                });
+                valInput.addEventListener('change', () => {
+                    applyAndRender(valInput.value);
                 });
 
-                // Tab 切换：2D 图纸 / 3D 装配预览
-                const view2DContainer = document.getElementById('view2DContainer');
-                const view3DContainer = document.getElementById('view3DContainer');
-                const tab2D = document.getElementById('tab2D');
-                const tab3D = document.getElementById('tab3D');
-                if (tab2D && tab3D && view2DContainer && view3DContainer) {
-                    tab2D.addEventListener('click', function() {
-                        view2DContainer.classList.remove('hidden');
-                        view3DContainer.classList.add('hidden');
-                        tab2D.classList.add('active', 'font-bold', 'bg-indigo-50', 'text-indigo-700', 'border-indigo-100');
-                        tab2D.classList.remove('font-medium', 'bg-gray-100', 'text-gray-500');
-                        tab3D.classList.remove('active', 'font-bold', 'bg-indigo-50', 'text-indigo-700', 'border-indigo-100');
-                        tab3D.classList.add('font-medium', 'bg-gray-100', 'text-gray-500');
-                    });
-                    tab3D.addEventListener('click', function() {
-                        view3DContainer.classList.remove('hidden');
-                        view2DContainer.classList.add('hidden');
-                        tab3D.classList.add('active', 'font-bold', 'bg-indigo-50', 'text-indigo-700', 'border-indigo-100');
-                        tab3D.classList.remove('font-medium', 'bg-gray-100', 'text-gray-500');
-                        tab2D.classList.remove('active', 'font-bold', 'bg-indigo-50', 'text-indigo-700', 'border-indigo-100');
-                        tab2D.classList.add('font-medium', 'bg-gray-100', 'text-gray-500');
-                        if (typeof scene3DInited === 'undefined' || !scene3DInited) {
-                            if (typeof init3D === 'function') init3D();
-                            scene3DInited = true;
-                        }
-                        if (typeof update3DModel === 'function') update3DModel();
-                    });
-                }
+                valInput.value = slider.value;
+            };
 
-                UI.fontFile.addEventListener('change', async (e) => {
-                    if (!e.target.files[0]) return;
-                    try {
-                        const arrayBuffer = await e.target.files[0].arrayBuffer();
-                        currentFont = opentype.parse(arrayBuffer);
-                        currentHanzi = UI.hanziInput.value || '福';
-                        render();
-                    } catch (err) { 
-                        alert('字体加载失败: ' + err.message); 
+            bindSlider('width', (val) => { W = val; });
+            bindSlider('depth', (val) => { D = val; });
+            bindSlider('thickness', (val) => { T = val; });
+            bindSlider('sidePanelHeight', (val) => { sidePanelHeight = val; });
+            bindSlider('mainTenonWidth', (val) => { mainTenonWidth = val; });
+            bindSlider('sideTenonWidth', (val) => { sideTenonWidth = val; });
+            bindSlider('kerf', (val) => { kerf = val; });
+            bindSlider('innerXSpacing', (val) => { innerXSpacing = val; });
+            bindSlider('innerYSpacing', (val) => { innerYSpacing = val; });
+            bindSlider('offsetX', (val) => { offsetX = val; });
+            bindSlider('offsetY', (val) => { offsetY = val; });
+
+            bindSlider('bridgeY', (val) => { bridgeY = val; });
+            bindSlider('bridgeHeight', (val) => { bridgeHeight = val; });
+            bindSlider('bridgeH_Length', (val) => { bridgeH_Length = val; });
+            bindSlider('bridgeH_OffsetX', (val) => { bridgeH_OffsetX = val; });
+            bindSlider('bridgeX', (val) => { bridgeX = val; });
+            bindSlider('bridgeWidth', (val) => { bridgeWidth = val; });
+            bindSlider('bridgeV_Length', (val) => { bridgeV_Length = val; });
+            bindSlider('bridgeV_OffsetY', (val) => { bridgeV_OffsetY = val; });
+            bindSlider('bridge2Y', (val) => { bridge2Y = val; });
+            bindSlider('bridge2Height', (val) => { bridge2Height = val; });
+            bindSlider('bridge2H_Length', (val) => { bridge2H_Length = val; });
+            bindSlider('bridge2H_OffsetX', (val) => { bridge2H_OffsetX = val; });
+            bindSlider('bridge2X', (val) => { bridge2X = val; });
+            bindSlider('bridge2Width', (val) => { bridge2Width = val; });
+            bindSlider('bridge2V_Length', (val) => { bridge2V_Length = val; });
+            bindSlider('bridge2V_OffsetY', (val) => { bridge2V_OffsetY = val; });
+
+            const bridgeH1El = document.getElementById('bridgeH1EnabledCheckbox');
+            const bridgeV1El = document.getElementById('bridgeV1EnabledCheckbox');
+            const bridgeH2El = document.getElementById('bridgeH2EnabledCheckbox');
+            const bridgeV2El = document.getElementById('bridgeV2EnabledCheckbox');
+            if (bridgeH1El) bridgeH1El.addEventListener('change', function() { bridgeH1Enabled = this.checked; render(); });
+            if (bridgeV1El) bridgeV1El.addEventListener('change', function() { bridgeV1Enabled = this.checked; render(); });
+            if (bridgeH2El) bridgeH2El.addEventListener('change', function() { bridgeH2Enabled = this.checked; render(); });
+            if (bridgeV2El) bridgeV2El.addEventListener('change', function() { bridgeV2Enabled = this.checked; render(); });
+
+            const radioButtons = document.querySelectorAll('input[name="baseType"]');
+            radioButtons.forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    baseSupportType = e.target.value;
+                    render();
+                });
+            });
+
+            const view2DContainer = document.getElementById('view2DContainer');
+            const view3DContainer = document.getElementById('view3DContainer');
+            const tab2D = document.getElementById('tab2D');
+            const tab3D = document.getElementById('tab3D');
+            if (tab2D && tab3D && view2DContainer && view3DContainer) {
+                tab2D.addEventListener('click', function() {
+                    view2DContainer.classList.remove('hidden');
+                    view3DContainer.classList.add('hidden');
+                    tab2D.classList.add('active', 'font-bold', 'bg-indigo-50', 'text-indigo-700', 'border-indigo-100');
+                    tab2D.classList.remove('font-medium', 'bg-gray-100', 'text-gray-500');
+                    tab3D.classList.remove('active', 'font-bold', 'bg-indigo-50', 'text-indigo-700', 'border-indigo-100');
+                    tab3D.classList.add('font-medium', 'bg-gray-100', 'text-gray-500');
+                });
+                tab3D.addEventListener('click', function() {
+                    view3DContainer.classList.remove('hidden');
+                    view2DContainer.classList.add('hidden');
+                    tab3D.classList.add('active', 'font-bold', 'bg-indigo-50', 'text-indigo-700', 'border-indigo-100');
+                    tab3D.classList.remove('font-medium', 'bg-gray-100', 'text-gray-500');
+                    tab2D.classList.remove('active', 'font-bold', 'bg-indigo-50', 'text-indigo-700', 'border-indigo-100');
+                    tab2D.classList.add('font-medium', 'bg-gray-100', 'text-gray-500');
+                    if (typeof scene3DInited === 'undefined' || !scene3DInited) {
+                        if (typeof init3D === 'function') init3D();
+                        scene3DInited = true;
                     }
+                    if (typeof update3DModel === 'function') update3DModel();
                 });
-
-                // 自动加载默认字体（Vercel 友好：请求 ./font.otf）
-                (function loadDefaultFont() {
-                    function showCanvasMessage(text) {
-                        try {
-                            paper.project.clear();
-                            new paper.PointText({
-                                point: paper.view.center,
-                                content: text,
-                                fillColor: '#6b7280',
-                                fontSize: 20,
-                                justification: 'center'
-                            });
-                            paper.view.draw();
-                        } catch (e) {}
-                    }
-                    showCanvasMessage('正在从服务器下载字体零件 (font.otf)...');
-                    const fontPath = './font.otf';
-                    fetch(fontPath)
-                        .then(res => {
-                            if (!res.ok) throw new Error('HTTP ' + res.status);
-                            return res.arrayBuffer();
-                        })
-                        .then(buf => {
-                            currentFont = opentype.parse(buf);
-                            render();
-                        })
-                        .catch(err => {
-                            console.error('默认字体加载失败 (font.otf):', err);
-                            showCanvasMessage('请手动载入字体文件');
-                        });
-                })();
-
-                UI.hanziInput.addEventListener('input', (e) => { 
-                    currentHanzi = e.target.value || '福'; 
-                    render(); 
-                });
-
-                UI.exportBtn.addEventListener('click', () => {
-                    if (!currentFont) return alert('请先上传字体');
-                    const panels = window.exportPanels;
-                    if (!panels || !panels.front) return alert('请先生成图纸（渲染一次后再导出）');
-
-                    const gap = 10;
-                    const f = panels.front, b = panels.back, l = panels.left, r = panels.right, bot = panels.bottom;
-                    const fB = f.bounds, bB = b.bounds, lB = l.bounds, rB = r.bounds, botB = bot.bounds;
-
-                    function pathToSvgPaths(item) {
-                        try {
-                            const el = item.exportSVG({ asString: false });
-                            if (!el) return '';
-                            const pathEls = el.tagName && el.tagName.toLowerCase() === 'path' ? [el] : (el.querySelectorAll ? Array.from(el.querySelectorAll('path')) : []);
-                            return pathEls.map(p => {
-                                const d = p.getAttribute('d');
-                                return d ? `<path d="${d.replace(/"/g, '&quot;')}" stroke-width="0.001" fill="none" stroke="#000"/>` : '';
-                            }).filter(Boolean).join('');
-                        } catch (e) { return ''; }
-                    }
-
-                    const row0H = Math.max(fB.height, bB.height);
-                    const row1Y = row0H + gap;
-                    const row1H = Math.max(lB.height, rB.height);
-                    const row2Y = row1Y + row1H + gap;
-
-                    const totalW = Math.max(fB.width + gap + bB.width, lB.width + gap + rB.width, botB.width);
-                    const totalH = row2Y + botB.height;
-
-                    const svgPaths = [
-                        `<g transform="translate(${-fB.left}, ${-fB.top})">${pathToSvgPaths(f)}</g>`,
-                        `<g transform="translate(${fB.width + gap - bB.left}, ${-bB.top})">${pathToSvgPaths(b)}</g>`,
-                        `<g transform="translate(${-lB.left}, ${row1Y - lB.top})">${pathToSvgPaths(l)}</g>`,
-                        `<g transform="translate(${lB.width + gap - rB.left}, ${row1Y - rB.top})">${pathToSvgPaths(r)}</g>`,
-                        `<g transform="translate(${-botB.left}, ${row2Y - botB.top})">${pathToSvgPaths(bot)}</g>`
-                    ].join('\n');
-
-                    const svgString = '<?xml version="1.0" encoding="utf-8"?>\n' +
-                        '<svg xmlns="http://www.w3.org/2000/svg" ' +
-                        `width="${totalW}mm" height="${totalH}mm" ` +
-                        `viewBox="0 0 ${totalW} ${totalH}">\n` +
-                        svgPaths + '\n</svg>';
-
-                    const blob = new Blob([svgString], { type: 'image/svg+xml' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `HanziBox_${currentHanzi}_T${T}_MainW${mainTenonWidth}_SideW${sideTenonWidth}_Kerf${kerf}.svg`;
-                    a.click();
-                    URL.revokeObjectURL(url);
-                });
-
-                // 绑定材质选择事件
-                const materialSelect = document.getElementById('materialSelect');
-                if (materialSelect) {
-                    materialSelect.addEventListener('change', (e) => {
-                        selectedMaterialType = e.target.value;
-                        render();
-                    });
-                }
-                const resetDefaultsBtn = document.getElementById('resetDefaultsBtn');
-                if (resetDefaultsBtn) {
-                    resetDefaultsBtn.addEventListener('click', () => {
-                        const defaults = {
-                            width: 120, depth: 60, thickness: 3, sidePanelHeight: 50,
-                            mainTenonWidth: 10, sideTenonWidth: 10, kerf: 0.10,
-                            innerXSpacing: 60, innerYSpacing: 60, offsetX: 0, offsetY: 0,
-                            bridgeY: 60, bridgeHeight: 3, bridgeH_Length: 120, bridgeH_OffsetX: 0,
-                            bridgeX: 60, bridgeWidth: 3, bridgeV_Length: 120, bridgeV_OffsetY: 0,
-                            bridge2Y: 30, bridge2Height: 3, bridge2H_Length: 30, bridge2H_OffsetX: -30,
-                            bridge2X: 30, bridge2Width: 3, bridge2V_Length: 30, bridge2V_OffsetY: -30
-                        };
-                        W = defaults.width;
-                        D = defaults.depth;
-                        T = defaults.thickness;
-                        sidePanelHeight = defaults.sidePanelHeight;
-                        mainTenonWidth = defaults.mainTenonWidth;
-                        sideTenonWidth = defaults.sideTenonWidth;
-                        kerf = defaults.kerf;
-                        innerXSpacing = defaults.innerXSpacing;
-                        innerYSpacing = defaults.innerYSpacing;
-                        offsetX = defaults.offsetX;
-                        offsetY = defaults.offsetY;
-                        bridgeY = defaults.bridgeY;
-                        bridgeHeight = defaults.bridgeHeight;
-                        bridgeH_Length = defaults.bridgeH_Length;
-                        bridgeH_OffsetX = defaults.bridgeH_OffsetX;
-                        bridgeX = defaults.bridgeX;
-                        bridgeWidth = defaults.bridgeWidth;
-                        bridgeV_Length = defaults.bridgeV_Length;
-                        bridgeV_OffsetY = defaults.bridgeV_OffsetY;
-                        bridge2Y = defaults.bridge2Y;
-                        bridge2Height = defaults.bridge2Height;
-                        bridge2H_Length = defaults.bridge2H_Length;
-                        bridge2H_OffsetX = defaults.bridge2H_OffsetX;
-                        bridge2X = defaults.bridge2X;
-                        bridge2Width = defaults.bridge2Width;
-                        bridge2V_Length = defaults.bridge2V_Length;
-                        bridge2V_OffsetY = defaults.bridge2V_OffsetY;
-                        for (const [id, val] of Object.entries(defaults)) {
-                            const sl = document.getElementById(id + 'Slider');
-                            const v = document.getElementById(id + 'Value');
-                            if (sl) sl.value = String(val);
-                            if (v) v.value = String(val);
-                        }
-                        render();
-                    });
-                }
-            } catch (err) {
-                console.error('初始化失败:', err);
-                const canvas = document.getElementById('paperCanvas');
-                if (canvas) {
-                    const ctx = canvas.getContext('2d');
-                    ctx.fillStyle = '#ef4444';
-                    ctx.font = '18px Arial';
-                    ctx.fillText('初始化失败: ' + err.message, 20, 50);
-                }
             }
+
+            UI.fontFile.addEventListener('change', async (e) => {
+                if (!e.target.files[0]) return;
+                try {
+                    const arrayBuffer = await e.target.files[0].arrayBuffer();
+                    currentFont = opentype.parse(arrayBuffer);
+                    currentHanzi = UI.hanziInput.value || '福';
+                    render();
+                } catch (err) {
+                    alert('字体加载失败: ' + err.message);
+                }
+            });
+
+            UI.hanziInput.addEventListener('input', (e) => {
+                currentHanzi = e.target.value || '福';
+                render();
+            });
+
+            UI.exportBtn.addEventListener('click', () => {
+                if (!currentFont) return alert('请先上传字体');
+                const panels = window.exportPanels;
+                if (!panels || !panels.front) return alert('请先生成图纸（渲染一次后再导出）');
+
+                const gap = 10;
+                const f = panels.front, b = panels.back, l = panels.left, r = panels.right, bot = panels.bottom;
+                const fB = f.bounds, bB = b.bounds, lB = l.bounds, rB = r.bounds, botB = bot.bounds;
+
+                function pathToSvgPaths(item) {
+                    try {
+                        const el = item.exportSVG({ asString: false });
+                        if (!el) return '';
+                        const pathEls = el.tagName && el.tagName.toLowerCase() === 'path' ? [el] : (el.querySelectorAll ? Array.from(el.querySelectorAll('path')) : []);
+                        return pathEls.map(p => {
+                            const d = p.getAttribute('d');
+                            return d ? `<path d="${d.replace(/"/g, '&quot;')}" stroke-width="0.001" fill="none" stroke="#000"/>` : '';
+                        }).filter(Boolean).join('');
+                    } catch (e) { return ''; }
+                }
+
+                const row0H = Math.max(fB.height, bB.height);
+                const row1Y = row0H + gap;
+                const row1H = Math.max(lB.height, rB.height);
+                const row2Y = row1Y + row1H + gap;
+
+                const totalW = Math.max(fB.width + gap + bB.width, lB.width + gap + rB.width, botB.width);
+                const totalH = row2Y + botB.height;
+
+                const svgPaths = [
+                    `<g transform="translate(${-fB.left}, ${-fB.top})">${pathToSvgPaths(f)}</g>`,
+                    `<g transform="translate(${fB.width + gap - bB.left}, ${-bB.top})">${pathToSvgPaths(b)}</g>`,
+                    `<g transform="translate(${-lB.left}, ${row1Y - lB.top})">${pathToSvgPaths(l)}</g>`,
+                    `<g transform="translate(${lB.width + gap - rB.left}, ${row1Y - rB.top})">${pathToSvgPaths(r)}</g>`,
+                    `<g transform="translate(${-botB.left}, ${row2Y - botB.top})">${pathToSvgPaths(bot)}</g>`
+                ].join('\n');
+
+                const svgString = '<?xml version="1.0" encoding="utf-8"?>\n' +
+                    '<svg xmlns="http://www.w3.org/2000/svg" ' +
+                    `width="${totalW}mm" height="${totalH}mm" ` +
+                    `viewBox="0 0 ${totalW} ${totalH}">\n` +
+                    svgPaths + '\n</svg>';
+
+                const blob = new Blob([svgString], { type: 'image/svg+xml' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `HanziBox_${currentHanzi}_T${T}_MainW${mainTenonWidth}_SideW${sideTenonWidth}_Kerf${kerf}.svg`;
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+
+            const materialSelect = document.getElementById('materialSelect');
+            if (materialSelect) {
+                materialSelect.addEventListener('change', (e) => {
+                    selectedMaterialType = e.target.value;
+                    render();
+                });
+            }
+
+            const resetDefaultsBtn = document.getElementById('resetDefaultsBtn');
+            if (resetDefaultsBtn) {
+                resetDefaultsBtn.addEventListener('click', () => {
+                    const defaults = {
+                        width: 120, depth: 60, thickness: 3, sidePanelHeight: 50,
+                        mainTenonWidth: 10, sideTenonWidth: 10, kerf: 0.10,
+                        innerXSpacing: 60, innerYSpacing: 60, offsetX: 0, offsetY: 0,
+                        bridgeY: 60, bridgeHeight: 3, bridgeH_Length: 120, bridgeH_OffsetX: 0,
+                        bridgeX: 60, bridgeWidth: 3, bridgeV_Length: 120, bridgeV_OffsetY: 0,
+                        bridge2Y: 30, bridge2Height: 3, bridge2H_Length: 30, bridge2H_OffsetX: -30,
+                        bridge2X: 30, bridge2Width: 3, bridge2V_Length: 30, bridge2V_OffsetY: -30
+                    };
+                    W = defaults.width;
+                    D = defaults.depth;
+                    T = defaults.thickness;
+                    sidePanelHeight = defaults.sidePanelHeight;
+                    mainTenonWidth = defaults.mainTenonWidth;
+                    sideTenonWidth = defaults.sideTenonWidth;
+                    kerf = defaults.kerf;
+                    innerXSpacing = defaults.innerXSpacing;
+                    innerYSpacing = defaults.innerYSpacing;
+                    offsetX = defaults.offsetX;
+                    offsetY = defaults.offsetY;
+                    bridgeY = defaults.bridgeY;
+                    bridgeHeight = defaults.bridgeHeight;
+                    bridgeH_Length = defaults.bridgeH_Length;
+                    bridgeH_OffsetX = defaults.bridgeH_OffsetX;
+                    bridgeX = defaults.bridgeX;
+                    bridgeWidth = defaults.bridgeWidth;
+                    bridgeV_Length = defaults.bridgeV_Length;
+                    bridgeV_OffsetY = defaults.bridgeV_OffsetY;
+                    bridge2Y = defaults.bridge2Y;
+                    bridge2Height = defaults.bridge2Height;
+                    bridge2H_Length = defaults.bridge2H_Length;
+                    bridge2H_OffsetX = defaults.bridge2H_OffsetX;
+                    bridge2X = defaults.bridge2X;
+                    bridge2Width = defaults.bridge2Width;
+                    bridge2V_Length = defaults.bridge2V_Length;
+                    bridge2V_OffsetY = defaults.bridge2V_OffsetY;
+                    for (const [id, val] of Object.entries(defaults)) {
+                        const sl = document.getElementById(id + 'Slider');
+                        const v = document.getElementById(id + 'Value');
+                        if (sl) sl.value = String(val);
+                        if (v) v.value = String(val);
+                    }
+                    render();
+                });
+            }
+
+            // 自动加载逻辑
+            const showMsg = (txt) => {
+                paper.project.clear();
+                new paper.PointText({ point: paper.view.center, content: txt, fillColor: '#4f46e5', justification: 'center' });
+                paper.view.draw();
+            };
+
+            showMsg('正在努力加载字体部件 (font.otf)...');
+
+            fetch('./font.otf')
+                .then(res => {
+                    if (!res.ok) throw new Error('找不到文件');
+                    return res.arrayBuffer();
+                })
+                .then(buf => {
+                    currentFont = opentype.parse(buf);
+                    render(); // 关键：加载完立刻画出来
+                })
+                .catch(err => {
+                    console.error(err);
+                    showMsg('自动加载失败，请手动上传字体文件');
+                });
         }
 
         // 【坚如磐石的字体解析引擎】
