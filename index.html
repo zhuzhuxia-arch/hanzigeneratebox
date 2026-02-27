@@ -1,0 +1,1675 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>汉字榫卯生成器 V5.1 (终极修复版)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/SVGLoader.js"></script>
+    <!-- Three.js 3D 装配预览 -->
+    <style>
+        html, body { margin: 0; padding: 0; height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f3f4f6; }
+        body { display: flex; overflow: hidden; }
+        .slider { width: 100%; height: 6px; border-radius: 3px; background: #d1d5db; outline: none; -webkit-appearance: none; appearance: none; }
+        .slider::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: #4f46e5; cursor: pointer; border: none; box-shadow: 0 1px 3px rgba(0,0,0,0.3);}
+        #paperCanvas { border: 1px solid #e5e7eb; background: #ffffff; border-radius: 0.5rem; width: 100%; height: 100%; display: block; }
+        .section-title { font-weight: 600; color: #374151; margin-top: 12px; margin-bottom: 8px; font-size: 14px; border-left: 4px solid #4f46e5; padding-left: 8px;}
+        details summary { cursor: pointer; list-style: none; }
+        details summary::-webkit-details-marker { display: none; }
+    </style>
+</head>
+<body class="h-screen w-screen overflow-hidden flex bg-gray-100 text-gray-800 font-sans m-0 p-0">
+    
+    <aside class="w-80 flex-shrink-0 bg-white border-r border-gray-200 shadow-xl z-20 flex flex-col h-full">
+        
+        <div class="px-5 py-4 border-b border-gray-200 bg-gray-50">
+            <h1 class="text-xl font-bold text-gray-800">汉字榫卯生成器 V5.2</h1>
+            <p class="text-xs text-gray-500 mt-1">U型承托底座 | 笔画延生</p>
+        </div>
+
+        <div class="flex-1 overflow-y-auto pb-6">
+            
+            <details class="group border-b border-gray-100" open>
+                <summary class="px-5 py-3 cursor-pointer list-none flex justify-between items-center bg-white hover:bg-gray-50 transition-colors">
+                    <span class="font-bold text-sm text-gray-700">1. 基础设置</span>
+                    <span class="text-gray-400 transition-transform group-open:rotate-180">▼</span>
+                </summary>
+                <div class="px-5 pb-4 pt-1">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">载入字体 (.ttf, .otf)</label>
+                    <input type="file" id="fontFile" accept=".ttf,.otf" class="block w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 mb-3">
+                    
+                    <label class="block text-xs font-medium text-gray-600 mb-1">输入汉字（单个）</label>
+                    <input type="text" id="hanziInput" value="福" maxlength="1" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xl text-center font-bold">
+                </div>
+            </details>
+
+            <details class="group border-b border-gray-100" open>
+                <summary class="px-5 py-3 cursor-pointer list-none flex justify-between items-center bg-white hover:bg-gray-50 transition-colors">
+                    <span class="font-bold text-sm text-gray-700">2. 外观尺寸参数</span>
+                    <span class="text-gray-400 transition-transform group-open:rotate-180">▼</span>
+                </summary>
+                <div class="px-5 pb-4 pt-1 space-y-3">
+                    <div>
+                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>基准宽度 W:</span> <span class="text-indigo-600"><input type="number" id="widthValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs font-bold bg-white text-indigo-700" min="50" max="300" value="120" step="1"> mm</span></label>
+                        <input type="range" id="widthSlider" min="50" max="300" value="120" step="1" class="slider">
+                    </div>
+                    <div>
+                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>总深度 D (含侧板):</span> <span class="text-indigo-600"><input type="number" id="depthValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs font-bold bg-white text-indigo-700" min="20" max="200" value="60" step="1"> mm</span></label>
+                        <input type="range" id="depthSlider" min="20" max="200" value="60" step="1" class="slider">
+                    </div>
+                    <div>
+                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>材料厚度 T:</span> <span class="text-indigo-600"><input type="number" id="thicknessValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs font-bold bg-white text-indigo-700" min="1" max="10" value="3" step="0.1"> mm</span></label>
+                        <input type="range" id="thicknessSlider" min="1" max="10" value="3" step="0.1" class="slider">
+                    </div>
+                    <div>
+                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>侧板高度 H2:</span> <span class="text-indigo-600"><input type="number" id="sidePanelHeightValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs font-bold bg-white text-indigo-700" min="20" max="200" value="50" step="1"> mm</span></label>
+                        <input type="range" id="sidePanelHeightSlider" min="20" max="200" value="50" step="1" class="slider">
+                    </div>
+                    <div>
+                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>主面板插口宽度:</span> <span class="text-indigo-600"><input type="number" id="mainTenonWidthValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs font-bold bg-white text-indigo-700" min="5" max="50" value="10" step="1"> mm</span></label>
+                        <input type="range" id="mainTenonWidthSlider" min="5" max="50" value="10" step="1" class="slider">
+                    </div>
+                    <div>
+                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>侧板插口宽度:</span> <span class="text-indigo-600"><input type="number" id="sideTenonWidthValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs font-bold bg-white text-indigo-700" min="5" max="50" value="10" step="1"> mm</span></label>
+                        <input type="range" id="sideTenonWidthSlider" min="5" max="50" value="10" step="1" class="slider">
+                    </div>
+                    <hr class="border-dashed border-gray-200 my-2">
+                    <div>
+                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>割缝补偿 (严丝合缝):</span> <span class="text-indigo-600"><input type="number" id="kerfValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs font-bold bg-white text-indigo-700" min="-0.5" max="0.5" value="0.10" step="0.01"> mm</span></label>
+                        <input type="range" id="kerfSlider" min="-0.5" max="0.5" value="0.10" step="0.01" class="slider">
+                    </div>
+                </div>
+            </details>
+
+            <details class="group border-b border-gray-100" open>
+                <summary class="px-5 py-3 cursor-pointer list-none flex justify-between items-center bg-white hover:bg-gray-50 transition-colors">
+                    <span class="font-bold text-sm text-gray-700">3. 内部骨架调节</span>
+                    <span class="text-gray-400 transition-transform group-open:rotate-180">▼</span>
+                </summary>
+                <div class="px-5 pb-4 pt-1 space-y-3">
+                    <div class="p-2 bg-gray-50 rounded-md border border-gray-200 mb-2">
+                        <label class="block text-xs font-bold text-gray-700 mb-1">支撑结构类型：</label>
+                        <div class="flex gap-3 mt-1">
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="radio" name="baseType" value="dual" checked class="text-indigo-600">
+                                <span class="ml-1 text-xs text-gray-600">双槽 (如:福)</span>
+                            </label>
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="radio" name="baseType" value="single" class="text-indigo-600">
+                                <span class="ml-1 text-xs text-gray-600">单槽 (如:幸)</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>骨架水平间距 (左右):</span> <span class="text-indigo-600"><input type="number" id="innerXSpacingValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs font-bold bg-white text-indigo-700" min="20" max="200" value="60" step="1"> mm</span></label>
+                        <input type="range" id="innerXSpacingSlider" min="20" max="200" value="60" step="1" class="slider">
+                    </div>
+                    <div>
+                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>底座抬升高度 (距底部):</span> <span class="text-indigo-600"><input type="number" id="innerYSpacingValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs font-bold bg-white text-indigo-700" min="20" max="200" value="60" step="1"> mm</span></label>
+                        <input type="range" id="innerYSpacingSlider" min="20" max="200" value="60" step="1" class="slider">
+                    </div>
+                    <div>
+                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>整体 X 轴平移:</span> <span class="text-indigo-600"><input type="number" id="offsetXValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs font-bold bg-white text-indigo-700" min="-100" max="100" value="0" step="1"> mm</span></label>
+                        <input type="range" id="offsetXSlider" min="-100" max="100" value="0" step="1" class="slider">
+                    </div>
+                    <div>
+                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>整体 Y 轴平移:</span> <span class="text-indigo-600"><input type="number" id="offsetYValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs font-bold bg-white text-indigo-700" min="-100" max="100" value="0" step="1"> mm</span></label>
+                        <input type="range" id="offsetYSlider" min="-100" max="100" value="0" step="1" class="slider">
+                    </div>
+                </div>
+            </details>
+
+            <details class="group border-b border-gray-100">
+                <summary class="px-5 py-3 cursor-pointer list-none flex justify-between items-center bg-white hover:bg-green-50 transition-colors">
+                    <span class="font-bold text-sm text-green-700">4. 主搭桥设置 (组1)</span>
+                    <span class="text-gray-400 transition-transform group-open:rotate-180">▼</span>
+                </summary>
+                <div class="px-5 pb-3 pt-1">
+                    <div class="flex gap-4 flex-wrap">
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="bridgeH1EnabledCheckbox" checked class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                            <span class="ml-2 text-sm font-medium text-gray-700">主横向</span>
+                        </label>
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="bridgeV1EnabledCheckbox" checked class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                            <span class="ml-2 text-sm font-medium text-gray-700">主纵向</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="px-5 pb-4 pt-1 space-y-3">
+                    <div>
+                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>横向连筋Y位置:</span> <span class="text-green-600"><input type="number" id="bridgeYValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-green-500 text-xs font-bold bg-white text-green-700" min="0" max="200" value="60" step="1"> mm</span></label>
+                        <input type="range" id="bridgeYSlider" min="0" max="200" value="60" step="1" class="slider">
+                    </div>
+                    <div>
+                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>横向连筋粗细(高):</span> <span class="text-green-600"><input type="number" id="bridgeHeightValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-green-500 text-xs font-bold bg-white text-green-700" min="1" max="10" value="3" step="0.5"> mm</span></label>
+                        <input type="range" id="bridgeHeightSlider" min="1" max="10" value="3" step="0.5" class="slider">
+                    </div>
+                    <div>
+                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>横向连筋长度:</span> <span class="text-green-600"><input type="number" id="bridgeH_LengthValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-green-500 text-xs font-bold bg-white text-green-700" min="10" max="300" value="120" step="1"> mm</span></label>
+                        <input type="range" id="bridgeH_LengthSlider" min="10" max="300" value="120" step="1" class="slider">
+                    </div>
+                    <div>
+                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>横向连筋左右偏移:</span> <span class="text-green-600"><input type="number" id="bridgeH_OffsetXValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-green-500 text-xs font-bold bg-white text-green-700" min="-150" max="150" value="0" step="1"> mm</span></label>
+                        <input type="range" id="bridgeH_OffsetXSlider" min="-150" max="150" value="0" step="1" class="slider">
+                    </div>
+                    <hr class="border-dashed border-gray-200 my-2">
+                    <div>
+                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>纵向连筋X位置:</span> <span class="text-green-600"><input type="number" id="bridgeXValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-green-500 text-xs font-bold bg-white text-green-700" min="0" max="200" value="60" step="1"> mm</span></label>
+                        <input type="range" id="bridgeXSlider" min="0" max="200" value="60" step="1" class="slider">
+                    </div>
+                    <div>
+                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>纵向连筋粗细(宽):</span> <span class="text-green-600"><input type="number" id="bridgeWidthValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-green-500 text-xs font-bold bg-white text-green-700" min="1" max="10" value="3" step="0.5"> mm</span></label>
+                        <input type="range" id="bridgeWidthSlider" min="1" max="10" value="3" step="0.5" class="slider">
+                    </div>
+                    <div>
+                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>纵向连筋长度:</span> <span class="text-green-600"><input type="number" id="bridgeV_LengthValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-green-500 text-xs font-bold bg-white text-green-700" min="10" max="300" value="120" step="1"> mm</span></label>
+                        <input type="range" id="bridgeV_LengthSlider" min="10" max="300" value="120" step="1" class="slider">
+                    </div>
+                    <div>
+                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>纵向连筋上下偏移:</span> <span class="text-green-600"><input type="number" id="bridgeV_OffsetYValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-green-500 text-xs font-bold bg-white text-green-700" min="-150" max="150" value="0" step="1"> mm</span></label>
+                        <input type="range" id="bridgeV_OffsetYSlider" min="-150" max="150" value="0" step="1" class="slider">
+                    </div>
+                </div>
+            </details>
+
+            <details class="group border-b border-gray-100">
+                <summary class="px-5 py-3 cursor-pointer list-none flex justify-between items-center bg-white hover:bg-blue-50 transition-colors">
+                    <span class="font-bold text-sm text-blue-700">5. 辅搭桥设置 (组2-修补孤岛)</span>
+                    <span class="text-gray-400 transition-transform group-open:rotate-180">▼</span>
+                </summary>
+                <div class="px-5 pb-3 pt-1">
+                    <div class="flex gap-4 flex-wrap">
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="bridgeH2EnabledCheckbox" checked class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                            <span class="ml-2 text-sm font-medium text-gray-700">辅横向</span>
+                        </label>
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="bridgeV2EnabledCheckbox" checked class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                            <span class="ml-2 text-sm font-medium text-gray-700">辅纵向</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="px-5 pb-4 pt-1 space-y-3">
+                    <div>
+                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>辅横连筋Y位置:</span> <span class="text-blue-600"><input type="number" id="bridge2YValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs font-bold bg-white text-blue-700" min="0" max="200" value="30" step="1"> mm</span></label>
+                        <input type="range" id="bridge2YSlider" min="0" max="200" value="30" step="1" class="slider">
+                    </div>
+                    <div>
+                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>辅横连筋粗细:</span> <span class="text-blue-600"><input type="number" id="bridge2HeightValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs font-bold bg-white text-blue-700" min="1" max="10" value="3" step="0.5"> mm</span></label>
+                        <input type="range" id="bridge2HeightSlider" min="1" max="10" value="3" step="0.5" class="slider">
+                    </div>
+                    <div>
+                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>辅横连筋长度:</span> <span class="text-blue-600"><input type="number" id="bridge2H_LengthValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs font-bold bg-white text-blue-700" min="10" max="300" value="30" step="1"> mm</span></label>
+                        <input type="range" id="bridge2H_LengthSlider" min="10" max="300" value="30" step="1" class="slider">
+                    </div>
+                    <div>
+                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>辅横连筋左右偏移:</span> <span class="text-blue-600"><input type="number" id="bridge2H_OffsetXValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs font-bold bg-white text-blue-700" min="-150" max="150" value="-30" step="1"> mm</span></label>
+                        <input type="range" id="bridge2H_OffsetXSlider" min="-150" max="150" value="-30" step="1" class="slider">
+                    </div>
+                    <hr class="border-dashed border-gray-200 my-2">
+                    <div>
+                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>辅纵连筋X位置:</span> <span class="text-blue-600"><input type="number" id="bridge2XValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs font-bold bg-white text-blue-700" min="0" max="200" value="30" step="1"> mm</span></label>
+                        <input type="range" id="bridge2XSlider" min="0" max="200" value="30" step="1" class="slider">
+                    </div>
+                    <div>
+                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>辅纵连筋粗细:</span> <span class="text-blue-600"><input type="number" id="bridge2WidthValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs font-bold bg-white text-blue-700" min="1" max="10" value="3" step="0.5"> mm</span></label>
+                        <input type="range" id="bridge2WidthSlider" min="1" max="10" value="3" step="0.5" class="slider">
+                    </div>
+                    <div>
+                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>辅纵连筋长度:</span> <span class="text-blue-600"><input type="number" id="bridge2V_LengthValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs font-bold bg-white text-blue-700" min="10" max="300" value="30" step="1"> mm</span></label>
+                        <input type="range" id="bridge2V_LengthSlider" min="10" max="300" value="30" step="1" class="slider">
+                    </div>
+                    <div>
+                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>辅纵连筋上下偏移:</span> <span class="text-blue-600"><input type="number" id="bridge2V_OffsetYValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs font-bold bg-white text-blue-700" min="-150" max="150" value="-30" step="1"> mm</span></label>
+                        <input type="range" id="bridge2V_OffsetYSlider" min="-150" max="150" value="-30" step="1" class="slider">
+                    </div>
+                </div>
+            </details>
+
+            <details class="group border-b border-gray-100">
+                <summary class="px-5 py-3 cursor-pointer list-none flex justify-between items-center bg-white hover:bg-purple-50 transition-colors">
+                    <span class="font-bold text-sm text-purple-700">6. 3D 材质与渲染</span>
+                    <span class="text-gray-400 transition-transform group-open:rotate-180">▼</span>
+                </summary>
+                <div class="px-5 pb-4 pt-1 space-y-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">选择材料质感:</label>
+                        <select id="materialSelect" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm">
+                            <option value="default" selected>⚪ 默认白模 (用于检查结构)</option>
+                            <option value="wood">🪵 原木板材 (温暖自然)</option>
+                            <option value="acrylic">🟥 红色亚克力 (半透明)</option>
+                            <option value="metal">🔩 拉丝金属 (铝合金)</option>
+                        </select>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-2 leading-tight">注：材质仅供预览参考，实际效果取决于物理加工。</p>
+                </div>
+            </details>
+
+        </div>
+
+        <div class="p-4 border-t border-gray-200 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-10">
+            <button id="exportBtn" class="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-300 font-bold shadow-md transition-all">
+                ↓ 下载 SVG 切割图纸
+            </button>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-full min-w-0 relative">
+        <div class="flex border-b border-gray-200 bg-white px-4 pt-4 flex-shrink-0">
+            <button id="tab2D" class="tab-btn active mr-2 px-6 py-2.5 font-bold text-sm rounded-t-lg bg-indigo-50 text-indigo-700 border-t border-l border-r border-indigo-100">2D 图纸视图</button>
+            <button id="tab3D" class="tab-btn inactive px-6 py-2.5 font-medium text-sm rounded-t-lg bg-gray-100 text-gray-500 hover:bg-gray-200">3D 装配预览</button>
+        </div>
+
+        <div class="flex-1 relative w-full h-full bg-gray-100">
+            <div id="view2DContainer" class="absolute inset-0 w-full h-full flex flex-col">
+                <div class="p-2 bg-white border-b flex justify-between items-center px-6 flex-shrink-0 shadow-sm z-10">
+                    <div class="text-xs font-medium text-gray-600">
+                        <span class="inline-block w-3 h-3 bg-red-500 rounded-full mr-1 align-middle"></span> 红色为激光切割线
+                        <span class="inline-block w-3 h-3 bg-blue-500 rounded-full ml-4 mr-1 align-middle"></span> <span class="text-blue-600">蓝色为未切透提示(需调节滑块对准)</span>
+                    </div>
+                </div>
+                <div class="flex-1 w-full h-full relative overflow-hidden bg-white">
+                    <canvas id="paperCanvas" resize="true" class="absolute inset-0 w-full h-full outline-none"></canvas>
+                </div>
+            </div>
+
+            <div id="view3DContainer" class="absolute inset-0 w-full h-full flex flex-col hidden">
+                <div class="p-2 bg-white border-b flex justify-between items-center px-6 flex-shrink-0 shadow-sm z-10">
+                    <div class="text-xs font-medium text-gray-600">
+                        🖱️ 鼠标左键旋转视图 | 🖱️ 鼠标右键平移 | 🖱️ 滚轮缩放
+                    </div>
+                </div>
+                <div id="threeContainer" class="flex-1 w-full h-full outline-none bg-gray-100"></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // 动态加载脚本（支持多个备用 CDN）
+        function loadScript(urls, onSuccess, onError, retryCount = 0) {
+            if (retryCount >= urls.length) {
+                onError();
+                return;
+            }
+
+            const script = document.createElement('script');
+            script.src = urls[retryCount];
+            script.onload = () => {
+                console.log('成功加载:', urls[retryCount]);
+                onSuccess();
+            };
+            script.onerror = () => {
+                console.warn('加载失败:', urls[retryCount], '尝试下一个...');
+                loadScript(urls, onSuccess, onError, retryCount + 1);
+            };
+            document.head.appendChild(script);
+        }
+
+        // 显示错误信息
+        function showError(message) {
+            const canvas = document.getElementById('paperCanvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#ef4444';
+                ctx.font = '18px Arial';
+                ctx.fillText(message, 20, 50);
+                ctx.fillText('请尝试：1) 刷新页面 2) 检查浏览器隐私设置', 20, 80);
+                ctx.fillText('3) 使用其他浏览器 4) 检查网络连接', 20, 110);
+            }
+        }
+
+        // 加载 opentype.js（多个备用 CDN）
+        const opentypeUrls = [
+            'https://unpkg.com/opentype.js@1.3.4/dist/opentype.min.js',
+            'https://cdn.jsdelivr.net/npm/opentype.js@1.3.4/dist/opentype.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/opentype.js/1.3.4/opentype.min.js'
+        ];
+
+        // 加载 paper.js（多个备用 CDN）
+        const paperUrls = [
+            'https://unpkg.com/paper@0.12.17/dist/paper-full.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/paper/0.12.17/paper-full.min.js',
+            'https://cdn.jsdelivr.net/npm/paper@0.12.17/dist/paper-full.min.js'
+        ];
+
+        let opentypeLoaded = false;
+        let paperLoaded = false;
+
+        // 加载 opentype.js
+        loadScript(
+            opentypeUrls,
+            () => {
+                opentypeLoaded = true;
+                checkAllLoaded();
+            },
+            () => {
+                console.error('所有 opentype.js CDN 都加载失败');
+                showError('opentype.js 加载失败，请检查网络或浏览器设置');
+            }
+        );
+
+        // 加载 paper.js
+        loadScript(
+            paperUrls,
+            () => {
+                paperLoaded = true;
+                checkAllLoaded();
+            },
+            () => {
+                console.error('所有 paper.js CDN 都加载失败');
+                showError('paper.js 加载失败，请检查网络或浏览器设置');
+            }
+        );
+
+        // 检查所有库是否加载完成
+        function checkAllLoaded() {
+            if (opentypeLoaded && paperLoaded && typeof opentype !== 'undefined' && typeof paper !== 'undefined') {
+                console.log('所有库加载完成，开始初始化');
+                initializeApp();
+                setTimeout(() => {
+                    if (typeof paper !== 'undefined') {
+                        render();
+                    }
+                }, 150);
+            }
+        }
+
+        // 等待所有脚本加载完成（备用检查）
+        function waitForLibraries(callback) {
+            const checkInterval = setInterval(() => {
+                if (typeof paper !== 'undefined' && typeof opentype !== 'undefined') {
+                    clearInterval(checkInterval);
+                    callback();
+                }
+            }, 50);
+            
+            // 15秒超时
+            setTimeout(() => {
+                clearInterval(checkInterval);
+                if (typeof paper === 'undefined' || typeof opentype === 'undefined') {
+                    console.error('库加载超时');
+                    showError('脚本加载超时，请检查浏览器设置');
+                }
+            }, 15000);
+        }
+
+        let currentFont = null;
+        let currentHanzi = '福';
+        let W = 120; let H = 120; let D = 60; let T = 3;
+        let sidePanelHeight = 50; // 默认侧板高度
+        let mainTenonWidth = 10;
+        let sideTenonWidth = 10;
+        let kerf = 0.10;
+        let innerXSpacing = 60; let innerYSpacing = 60;
+        let offsetX = 0; let offsetY = 0;
+        let scale = 2; // SVG 显示缩放比例 (1mm = 2px)
+        
+        // 连筋参数
+        let bridgeY = 60;      // 横向连筋Y位置
+        let bridgeHeight = 3;  // 横向连筋高度
+        let bridgeX = 60;      // 纵向连筋X位置
+        let bridgeWidth = 3;   // 纵向连筋宽度
+        let bridgeH_Length = 120;   // 横向连筋长度
+        let bridgeH_OffsetX = 0;   // 横向连筋左右移动
+        let bridgeV_Length = 120;   // 纵向连筋长度
+        let bridgeV_OffsetY = 0;   // 纵向连筋上下移动
+        
+        // 第二组连筋参数 (次级辅槽)
+        let bridge2Y = 30;     let bridge2Height = 3;  let bridge2H_Length = 30;  let bridge2H_OffsetX = -30;
+        let bridge2X = 30;     let bridge2Width = 3;   let bridge2V_Length = 30;  let bridge2V_OffsetY = -30;
+        
+        let bridgeH1Enabled = true;  // 主横向连筋
+        let bridgeV1Enabled = true;  // 主纵向连筋
+        let bridgeH2Enabled = true;  // 辅横向连筋
+        let bridgeV2Enabled = true;  // 辅纵向连筋
+        
+        let baseSupportType = 'dual'; // 'dual' 表示双脚，'single' 表示单脚
+        
+        let scene3DInited = false; // 3D 场景是否已初始化
+        let renderGeneration = 0; // 用于防止异步模型重叠
+        let woodMaterialInstance = null; // 木材材质单例
+        let selectedMaterialType = 'default'; // 默认材质
+        
+        // 计算后的零件数据（用于3D渲染）
+        let computedParts = {
+            front: null,
+            back: null,
+            sideL: null,
+            sideR: null,
+            bottom: null
+        };
+        
+        function resetComputedParts() {
+            computedParts = {
+                front: null,
+                back: null,
+                sideL: null,
+                sideR: null,
+                bottom: null
+            };
+        }
+
+        const UI = {
+            fontFile: document.getElementById('fontFile'),
+            hanziInput: document.getElementById('hanziInput'),
+            canvas: document.getElementById('paperCanvas'),
+            exportBtn: document.getElementById('exportBtn')
+        };
+
+        // 初始化函数（在库加载完成后执行）
+        function initializeApp() {
+            try {
+                // 初始化 Paper.js 视口环境
+                if (typeof paper === 'undefined') {
+                    throw new Error('Paper.js 未加载');
+                }
+                paper.setup(UI.canvas);
+
+                // 绑定所有滑块事件的快捷函数（使用回调函数更新变量）
+                const bindSlider = (id, setter) => {
+                    const slider = document.getElementById(id + 'Slider');
+                    const valInput = document.getElementById(id + 'Value');
+                    if (!slider || !valInput) {
+                        console.warn(`找不到滑块元素: ${id}Slider 或 ${id}Value`);
+                        return;
+                    }
+                    const min = parseFloat(slider.min);
+                    const max = parseFloat(slider.max);
+                    const step = parseFloat(slider.step);
+
+                    function clampToBounds(val) {
+                        const n = parseFloat(val);
+                        if (isNaN(n)) return parseFloat(slider.value);
+                        return Math.min(max, Math.max(min, n));
+                    }
+                    function roundToStep(val) {
+                        if (step <= 0) return val;
+                        return Math.round(val / step) * step;
+                    }
+                    function applyAndRender(val) {
+                        val = clampToBounds(val);
+                        val = Math.min(max, Math.max(min, roundToStep(val)));
+                        slider.value = val;
+                        valInput.value = val;
+                        setter(val);
+                        render();
+                    }
+
+                    slider.addEventListener('input', () => {
+                        valInput.value = slider.value;
+                        setter(parseFloat(slider.value));
+                        render();
+                    });
+                    valInput.addEventListener('input', () => {
+                        const parsed = parseFloat(valInput.value);
+                        if (isNaN(parsed)) return;
+                        const safe = Math.min(max, Math.max(min, parsed));
+                        slider.value = safe;
+                        setter(safe);
+                        render();
+                    });
+                    valInput.addEventListener('blur', () => {
+                        applyAndRender(valInput.value);
+                    });
+                    valInput.addEventListener('change', () => {
+                        applyAndRender(valInput.value);
+                    });
+
+                    valInput.value = slider.value;
+                };
+                
+                bindSlider('width', (val) => { W = val; });
+                bindSlider('depth', (val) => { D = val; });
+                bindSlider('thickness', (val) => { T = val; });
+                bindSlider('sidePanelHeight', (val) => { sidePanelHeight = val; });
+                bindSlider('mainTenonWidth', (val) => { mainTenonWidth = val; });
+                bindSlider('sideTenonWidth', (val) => { sideTenonWidth = val; });
+                bindSlider('kerf', (val) => { kerf = val; });
+                bindSlider('innerXSpacing', (val) => { innerXSpacing = val; });
+                bindSlider('innerYSpacing', (val) => { innerYSpacing = val; });
+                bindSlider('offsetX', (val) => { offsetX = val; });
+                bindSlider('offsetY', (val) => { offsetY = val; });
+                
+                // 绑定连筋滑块
+                bindSlider('bridgeY', (val) => { bridgeY = val; });
+                bindSlider('bridgeHeight', (val) => { bridgeHeight = val; });
+                bindSlider('bridgeH_Length', (val) => { bridgeH_Length = val; });
+                bindSlider('bridgeH_OffsetX', (val) => { bridgeH_OffsetX = val; });
+                bindSlider('bridgeX', (val) => { bridgeX = val; });
+                bindSlider('bridgeWidth', (val) => { bridgeWidth = val; });
+                bindSlider('bridgeV_Length', (val) => { bridgeV_Length = val; });
+                bindSlider('bridgeV_OffsetY', (val) => { bridgeV_OffsetY = val; });
+                bindSlider('bridge2Y', (val) => { bridge2Y = val; });
+                bindSlider('bridge2Height', (val) => { bridge2Height = val; });
+                bindSlider('bridge2H_Length', (val) => { bridge2H_Length = val; });
+                bindSlider('bridge2H_OffsetX', (val) => { bridge2H_OffsetX = val; });
+                bindSlider('bridge2X', (val) => { bridge2X = val; });
+                bindSlider('bridge2Width', (val) => { bridge2Width = val; });
+                bindSlider('bridge2V_Length', (val) => { bridge2V_Length = val; });
+                bindSlider('bridge2V_OffsetY', (val) => { bridge2V_OffsetY = val; });
+
+                const bridgeH1El = document.getElementById('bridgeH1EnabledCheckbox');
+                const bridgeV1El = document.getElementById('bridgeV1EnabledCheckbox');
+                const bridgeH2El = document.getElementById('bridgeH2EnabledCheckbox');
+                const bridgeV2El = document.getElementById('bridgeV2EnabledCheckbox');
+                if (bridgeH1El) bridgeH1El.addEventListener('change', function() { bridgeH1Enabled = this.checked; render(); });
+                if (bridgeV1El) bridgeV1El.addEventListener('change', function() { bridgeV1Enabled = this.checked; render(); });
+                if (bridgeH2El) bridgeH2El.addEventListener('change', function() { bridgeH2Enabled = this.checked; render(); });
+                if (bridgeV2El) bridgeV2El.addEventListener('change', function() { bridgeV2Enabled = this.checked; render(); });
+
+                const radioButtons = document.querySelectorAll('input[name="baseType"]');
+                radioButtons.forEach(radio => {
+                    radio.addEventListener('change', (e) => {
+                        baseSupportType = e.target.value;
+                        render();
+                    });
+                });
+
+                // Tab 切换：2D 图纸 / 3D 装配预览
+                const view2DContainer = document.getElementById('view2DContainer');
+                const view3DContainer = document.getElementById('view3DContainer');
+                const tab2D = document.getElementById('tab2D');
+                const tab3D = document.getElementById('tab3D');
+                if (tab2D && tab3D && view2DContainer && view3DContainer) {
+                    tab2D.addEventListener('click', function() {
+                        view2DContainer.classList.remove('hidden');
+                        view3DContainer.classList.add('hidden');
+                        tab2D.classList.add('active', 'font-bold', 'bg-indigo-50', 'text-indigo-700', 'border-indigo-100');
+                        tab2D.classList.remove('font-medium', 'bg-gray-100', 'text-gray-500');
+                        tab3D.classList.remove('active', 'font-bold', 'bg-indigo-50', 'text-indigo-700', 'border-indigo-100');
+                        tab3D.classList.add('font-medium', 'bg-gray-100', 'text-gray-500');
+                    });
+                    tab3D.addEventListener('click', function() {
+                        view3DContainer.classList.remove('hidden');
+                        view2DContainer.classList.add('hidden');
+                        tab3D.classList.add('active', 'font-bold', 'bg-indigo-50', 'text-indigo-700', 'border-indigo-100');
+                        tab3D.classList.remove('font-medium', 'bg-gray-100', 'text-gray-500');
+                        tab2D.classList.remove('active', 'font-bold', 'bg-indigo-50', 'text-indigo-700', 'border-indigo-100');
+                        tab2D.classList.add('font-medium', 'bg-gray-100', 'text-gray-500');
+                        if (typeof scene3DInited === 'undefined' || !scene3DInited) {
+                            if (typeof init3D === 'function') init3D();
+                            scene3DInited = true;
+                        }
+                        if (typeof update3DModel === 'function') update3DModel();
+                    });
+                }
+
+                UI.fontFile.addEventListener('change', async (e) => {
+                    if (!e.target.files[0]) return;
+                    try {
+                        const arrayBuffer = await e.target.files[0].arrayBuffer();
+                        currentFont = opentype.parse(arrayBuffer);
+                        currentHanzi = UI.hanziInput.value || '福';
+                        render();
+                    } catch (err) { 
+                        alert('字体加载失败: ' + err.message); 
+                    }
+                });
+
+                UI.hanziInput.addEventListener('input', (e) => { 
+                    currentHanzi = e.target.value || '福'; 
+                    render(); 
+                });
+
+                UI.exportBtn.addEventListener('click', () => {
+                    if (!currentFont) return alert('请先上传字体');
+                    const panels = window.exportPanels;
+                    if (!panels || !panels.front) return alert('请先生成图纸（渲染一次后再导出）');
+
+                    const gap = 10;
+                    const f = panels.front, b = panels.back, l = panels.left, r = panels.right, bot = panels.bottom;
+                    const fB = f.bounds, bB = b.bounds, lB = l.bounds, rB = r.bounds, botB = bot.bounds;
+
+                    function pathToSvgPaths(item) {
+                        try {
+                            const el = item.exportSVG({ asString: false });
+                            if (!el) return '';
+                            const pathEls = el.tagName && el.tagName.toLowerCase() === 'path' ? [el] : (el.querySelectorAll ? Array.from(el.querySelectorAll('path')) : []);
+                            return pathEls.map(p => {
+                                const d = p.getAttribute('d');
+                                return d ? `<path d="${d.replace(/"/g, '&quot;')}" stroke-width="0.001" fill="none" stroke="#000"/>` : '';
+                            }).filter(Boolean).join('');
+                        } catch (e) { return ''; }
+                    }
+
+                    const row0H = Math.max(fB.height, bB.height);
+                    const row1Y = row0H + gap;
+                    const row1H = Math.max(lB.height, rB.height);
+                    const row2Y = row1Y + row1H + gap;
+
+                    const totalW = Math.max(fB.width + gap + bB.width, lB.width + gap + rB.width, botB.width);
+                    const totalH = row2Y + botB.height;
+
+                    const svgPaths = [
+                        `<g transform="translate(${-fB.left}, ${-fB.top})">${pathToSvgPaths(f)}</g>`,
+                        `<g transform="translate(${fB.width + gap - bB.left}, ${-bB.top})">${pathToSvgPaths(b)}</g>`,
+                        `<g transform="translate(${-lB.left}, ${row1Y - lB.top})">${pathToSvgPaths(l)}</g>`,
+                        `<g transform="translate(${lB.width + gap - rB.left}, ${row1Y - rB.top})">${pathToSvgPaths(r)}</g>`,
+                        `<g transform="translate(${-botB.left}, ${row2Y - botB.top})">${pathToSvgPaths(bot)}</g>`
+                    ].join('\n');
+
+                    const svgString = '<?xml version="1.0" encoding="utf-8"?>\n' +
+                        '<svg xmlns="http://www.w3.org/2000/svg" ' +
+                        `width="${totalW}mm" height="${totalH}mm" ` +
+                        `viewBox="0 0 ${totalW} ${totalH}">\n` +
+                        svgPaths + '\n</svg>';
+
+                    const blob = new Blob([svgString], { type: 'image/svg+xml' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `HanziStructure_${currentHanzi}_W${W}_D${D}_T${T}.svg`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                });
+
+                // 绑定材质选择事件
+                const materialSelect = document.getElementById('materialSelect');
+                if (materialSelect) {
+                    materialSelect.addEventListener('change', (e) => {
+                        selectedMaterialType = e.target.value;
+                        render();
+                    });
+                }
+            } catch (err) {
+                console.error('初始化失败:', err);
+                const canvas = document.getElementById('paperCanvas');
+                if (canvas) {
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = '#ef4444';
+                    ctx.font = '18px Arial';
+                    ctx.fillText('初始化失败: ' + err.message, 20, 50);
+                }
+            }
+        }
+
+        // 【坚如磐石的字体解析引擎】
+        function convertToPaperPath(otPath) {
+            console.log('开始转换路径...');
+            try {
+                // 方法1: 直接使用 toPathData() 创建 SVG 路径（最可靠）
+                try {
+                    const pathData = otPath.toPathData(2);
+                    console.log('toPathData() 成功，路径数据长度:', pathData ? pathData.length : 0);
+                    
+                    if (pathData && pathData.trim()) {
+                        // 创建 SVG 元素
+                        const svgNS = 'http://www.w3.org/2000/svg';
+                        const svg = document.createElementNS(svgNS, 'svg');
+                        svg.setAttribute('xmlns', svgNS);
+                        const path = document.createElementNS(svgNS, 'path');
+                        path.setAttribute('d', pathData);
+                        svg.appendChild(path);
+                        
+                        console.log('尝试导入 SVG...');
+                        // 使用 SVG 导入，它会自动处理多个断开的笔画（多个 M 命令）并创建 CompoundPath
+                        let imported = paper.project.importSVG(svg, { insert: false });
+                        console.log('导入结果类型:', imported ? imported.constructor.name : 'null');
+                        
+                        if (imported) {
+                            let paperPath = extractPathFromImported(imported);
+                            if (paperPath) {
+                                console.log('成功提取路径，类型:', paperPath.constructor.name, '段数:', paperPath.segments ? paperPath.segments.length : 0);
+                                // --- 修正：移除 Y 轴翻转，解决汉字倒立问题 ---
+                                // try {
+                                //     paperPath.scale(1, -1);
+                                //     console.log('Y轴翻转成功');
+                                // } catch (e) {
+                                //     console.warn('翻转 Y 轴失败:', e);
+                                // }
+                                // -----------------------------------------
+                                return paperPath;
+                            } else {
+                                console.warn('提取路径失败');
+                            }
+                        } else {
+                            console.warn('SVG 导入返回 null');
+                        }
+                    } else {
+                        console.warn('路径数据为空');
+                    }
+                } catch (e) {
+                    console.warn('方法1失败:', e);
+                }
+                
+                // 方法2: 使用 toSVG() 然后解析
+                try {
+                    const svgString = otPath.toSVG(2);
+                    console.log('toSVG() 成功，字符串长度:', svgString ? svgString.length : 0);
+                    
+                    if (svgString) {
+                        // 尝试提取路径数据
+                        const pathMatch = svgString.match(/d=["']([^"']*)["']/);
+                        if (pathMatch && pathMatch[1]) {
+                            const pathData = pathMatch[1].trim();
+                            console.log('提取到路径数据，长度:', pathData.length);
+                            
+                            if (pathData) {
+                                const svgNS = 'http://www.w3.org/2000/svg';
+                                const svg = document.createElementNS(svgNS, 'svg');
+                                svg.setAttribute('xmlns', svgNS);
+                                const path = document.createElementNS(svgNS, 'path');
+                                path.setAttribute('d', pathData);
+                                svg.appendChild(path);
+                                
+                                let imported = paper.project.importSVG(svg, { insert: false });
+                                if (imported) {
+                                    let paperPath = extractPathFromImported(imported);
+                                    if (paperPath) {
+                                        // --- 修正：移除 Y 轴翻转 ---
+                                        // try {
+                                        //     paperPath.scale(1, -1);
+                                        // } catch (e) {
+                                        //     console.warn('翻转 Y 轴失败:', e);
+                                        // }
+                                        // ---------------------------
+                                        return paperPath;
+                                    }
+                                }
+                            }
+                        } else {
+                            // 如果包含完整的 SVG，尝试直接解析
+                            if (svgString.includes('<svg') || svgString.includes('<path')) {
+                                try {
+                                    const parser = new DOMParser();
+                                    const svgDoc = parser.parseFromString(svgString, 'image/svg+xml');
+                                    const svgElement = svgDoc.documentElement;
+                                    
+                                    // 检查解析错误
+                                    const parserError = svgDoc.querySelector('parsererror');
+                                    if (parserError) {
+                                        console.warn('SVG 解析错误:', parserError.textContent);
+                                    } else {
+                                        let imported = paper.project.importSVG(svgElement, { insert: false });
+                                        if (imported) {
+                                            let paperPath = extractPathFromImported(imported);
+                                            if (paperPath) {
+                                                // --- 修正：移除 Y 轴翻转 ---
+                                                // try {
+                                                //     paperPath.scale(1, -1);
+                                                // } catch (e) {
+                                                //     console.warn('翻转 Y 轴失败:', e);
+                                                // }
+                                                // ---------------------------
+                                                return paperPath;
+                                            }
+                                        }
+                                    }
+                                } catch (e) {
+                                    console.warn('DOMParser 失败:', e);
+                                }
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.warn('方法2失败:', e);
+                }
+                
+                // 方法3: 直接从 opentype.js 的 commands 创建 Paper.js 路径
+                // (方法3本身的逻辑不需要翻转，保持原样)
+                try {
+                    console.log('尝试方法3: 直接从 commands 创建路径');
+                    const commands = otPath.commands;
+                    if (commands && commands.length > 0) {
+                        console.log('找到', commands.length, '个命令');
+                        
+                        // 创建新的 Paper.js 路径
+                        const paperPath = new paper.Path();
+                        let currentX = 0, currentY = 0;
+                        
+                        for (let i = 0; i < commands.length; i++) {
+                            const cmd = commands[i];
+                            try {
+                                if (cmd.type === 'M' || cmd.type === 'm') {
+                                    // MoveTo
+                                    currentX = cmd.type === 'M' ? cmd.x : currentX + cmd.x;
+                                    currentY = cmd.type === 'M' ? -cmd.y : currentY - cmd.y;
+                                    if (paperPath.segments.length === 0) {
+                                        paperPath.moveTo(currentX, currentY);
+                                    } else {
+                                        paperPath.add(new paper.Point(currentX, currentY));
+                                    }
+                                } else if (cmd.type === 'L' || cmd.type === 'l') {
+                                    // LineTo
+                                    currentX = cmd.type === 'L' ? cmd.x : currentX + cmd.x;
+                                    currentY = cmd.type === 'L' ? -cmd.y : currentY - cmd.y;
+                                    paperPath.add(new paper.Point(currentX, currentY));
+                                } else if (cmd.type === 'C' || cmd.type === 'c') {
+                                    // Cubic Bezier
+                                    const x1 = cmd.type === 'C' ? cmd.x1 : currentX + cmd.x1;
+                                    const y1 = cmd.type === 'C' ? -cmd.y1 : currentY - cmd.y1;
+                                    const x2 = cmd.type === 'C' ? cmd.x2 : currentX + cmd.x2;
+                                    const y2 = cmd.type === 'C' ? -cmd.y2 : currentY - cmd.y2;
+                                    currentX = cmd.type === 'C' ? cmd.x : currentX + cmd.x;
+                                    currentY = cmd.type === 'C' ? -cmd.y : currentY - cmd.y;
+                                    const handleIn = new paper.Point(x1, y1);
+                                    const handleOut = new paper.Point(x2, y2);
+                                    paperPath.add(new paper.Segment(new paper.Point(currentX, currentY), handleIn, handleOut));
+                                } else if (cmd.type === 'Q' || cmd.type === 'q') {
+                                    // Quadratic Bezier (转换为三次贝塞尔)
+                                    const x1 = cmd.type === 'Q' ? cmd.x1 : currentX + cmd.x1;
+                                    const y1 = cmd.type === 'Q' ? -cmd.y1 : currentY - cmd.y1;
+                                    currentX = cmd.type === 'Q' ? cmd.x : currentX + cmd.x;
+                                    currentY = cmd.type === 'Q' ? -cmd.y : currentY - cmd.y;
+                                    const handleIn = new paper.Point(x1, y1);
+                                    paperPath.add(new paper.Segment(new paper.Point(currentX, currentY), handleIn));
+                                } else if (cmd.type === 'Z' || cmd.type === 'z') {
+                                    // ClosePath
+                                    paperPath.closePath();
+                                }
+                            } catch (e) {
+                                console.warn(`处理命令 ${cmd.type} 失败:`, e);
+                            }
+                        }
+                        
+                        if (paperPath.segments.length > 0) {
+                            console.log('方法3成功，创建了', paperPath.segments.length, '个段');
+                            return paperPath;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('方法3失败:', e);
+                }
+                
+                console.error('所有路径转换方法都失败了');
+                return null;
+            } catch (e) { 
+                console.error("路径解析出错:", e, e.stack); 
+                return null; 
+            }
+        }
+        
+        // 从导入的 SVG 中提取路径（支持 Path, CompoundPath, Group）
+        function extractPathFromImported(imported) {
+            if (!imported) {
+                console.warn('extractPathFromImported: imported 为 null');
+                return null;
+            }
+            
+            console.log('extractPathFromImported: 类型 =', imported.constructor.name);
+            
+            // 如果是单个路径，直接返回
+            if (imported instanceof paper.Path) {
+                const segCount = imported.segments ? imported.segments.length : 0;
+                console.log('是 Path，段数:', segCount);
+                if (segCount > 0) {
+                    return imported;
+                } else {
+                    console.warn('Path 没有段');
+                    return null;
+                }
+            }
+            
+            // 如果是复合路径
+            if (imported instanceof paper.CompoundPath) {
+                const childCount = imported.children ? imported.children.length : 0;
+                const segCount = imported.segments ? imported.segments.length : 0;
+                console.log('是 CompoundPath，子路径数:', childCount, '段数:', segCount);
+                
+                // 如果有段，直接返回
+                if (segCount > 0) {
+                    return imported;
+                }
+                
+                // 如果没有段但有子路径，检查子路径
+                if (childCount > 0) {
+                    let hasValidChild = false;
+                    for (let i = 0; i < imported.children.length; i++) {
+                        const child = imported.children[i];
+                        if (child.segments && child.segments.length > 0) {
+                            hasValidChild = true;
+                            break;
+                        }
+                    }
+                    if (hasValidChild) {
+                        return imported;
+                    }
+                }
+                
+                console.warn('CompoundPath 没有有效段或子路径');
+                return null;
+            }
+            
+            // 如果是 Group，提取所有路径
+            if (imported instanceof paper.Group) {
+                console.log('是 Group，子元素数:', imported.children ? imported.children.length : 0);
+                const paths = [];
+                function extractPaths(item) {
+                    if (item instanceof paper.Path) {
+                        if (item.segments && item.segments.length > 0) {
+                            paths.push(item);
+                        }
+                    } else if (item instanceof paper.CompoundPath) {
+                        if ((item.segments && item.segments.length > 0) || 
+                            (item.children && item.children.length > 0)) {
+                            paths.push(item);
+                        }
+                    } else if (item instanceof paper.Group && item.children) {
+                        item.children.forEach(child => extractPaths(child));
+                    }
+                }
+                extractPaths(imported);
+                
+                console.log('从 Group 中提取到', paths.length, '个有效路径');
+                
+                if (paths.length === 0) {
+                    console.warn('Group 中未找到有效路径');
+                    return null;
+                }
+                
+                // 如果只有一个路径，直接返回
+                if (paths.length === 1) {
+                    console.log('只有一个路径，直接返回');
+                    return paths[0];
+                }
+                
+                // 多个路径，创建 CompoundPath
+                try {
+                    console.log('尝试创建 CompoundPath，包含', paths.length, '个路径');
+                    const compound = new paper.CompoundPath();
+                    for (let i = 0; i < paths.length; i++) {
+                        try {
+                            // 将路径添加到 CompoundPath
+                            compound.addChild(paths[i]);
+                        } catch (e) {
+                            console.warn(`添加路径 ${i} 到 CompoundPath 失败:`, e);
+                        }
+                    }
+                    if (compound.children && compound.children.length > 0) {
+                        console.log('成功创建 CompoundPath，包含', compound.children.length, '个子路径');
+                        return compound;
+                    }
+                } catch (e) {
+                    console.warn('创建 CompoundPath 失败，尝试 unite:', e);
+                }
+                
+                // 如果 CompoundPath 失败，尝试 unite（可能失败，但值得一试）
+                try {
+                    console.log('尝试使用 unite 合并路径');
+                    let merged = paths[0];
+                    for (let i = 1; i < paths.length; i++) {
+                        try {
+                            merged = merged.unite(paths[i]);
+                        } catch (e) {
+                            console.warn(`合并第${i+1}个路径失败，跳过:`, e);
+                        }
+                    }
+                    console.log('unite 合并成功');
+                    return merged;
+                } catch (e) {
+                    console.warn('合并路径失败，使用第一个路径:', e);
+                    return paths[0];
+                }
+            }
+            
+            console.warn('未知的导入类型:', imported.constructor.name);
+            return null;
+        }
+
+        // 辅助函数：确保路径居中到原点
+        function centerPath(path) {
+            if (!path) return;
+            try {
+                const bounds = path.bounds;
+                const centerX = (bounds.left + bounds.right) / 2;
+                const centerY = (bounds.top + bounds.bottom) / 2;
+                path.translate([-centerX, -centerY]);
+            } catch (e) {
+                console.warn('centerPath 失败:', e);
+            }
+        }
+
+        // 核心渲染引擎
+        function render() {
+            paper.project.clear();
+            
+            if (!currentFont) {
+                new paper.PointText({ 
+                    point: paper.view.center, 
+                    content: '请在左侧载入字体文件开始设计', 
+                    fillColor: '#9ca3af', 
+                    fontSize: 24, 
+                    justification: 'center' 
+                });
+                paper.view.draw();
+                return;
+            }
+
+            try {
+                // 1. 获取文字并缩放
+                const otPath = currentFont.getPath(currentHanzi, 0, 0, 100);
+                const bbox = otPath.getBoundingBox();
+                const fontW = bbox.x2 - bbox.x1;
+                const fontH = bbox.y2 - bbox.y1;
+                if (fontW <= 0) return;
+                
+                H = W * (fontH / fontW); 
+                const scaleFactor = W / fontW;
+                
+                // 更新连筋滑块范围（动态跟随汉字尺寸）
+                const bridgeYSlider = document.getElementById('bridgeYSlider');
+                const bridgeXSlider = document.getElementById('bridgeXSlider');
+                const bridge2YSlider = document.getElementById('bridge2YSlider');
+                const bridge2XSlider = document.getElementById('bridge2XSlider');
+                if (bridgeYSlider && H > 0) {
+                    bridgeYSlider.max = Math.max(H, 200);
+                    if (parseFloat(bridgeYSlider.value) > H) {
+                        bridgeYSlider.value = H / 2;
+                        bridgeY = H / 2;
+                        document.getElementById('bridgeYValue').textContent = Math.round(bridgeY);
+                    }
+                }
+                if (bridgeXSlider && W > 0) {
+                    bridgeXSlider.max = Math.max(W, 200);
+                    if (parseFloat(bridgeXSlider.value) > W) {
+                        bridgeXSlider.value = W / 2;
+                        bridgeX = W / 2;
+                        document.getElementById('bridgeXValue').textContent = Math.round(bridgeX);
+                    }
+                }
+                if (bridge2YSlider && H > 0) {
+                    bridge2YSlider.max = Math.max(H, 200);
+                    if (parseFloat(bridge2YSlider.value) > H) {
+                        bridge2YSlider.value = H / 2;
+                        bridge2Y = H / 2;
+                        document.getElementById('bridge2YValue').textContent = Math.round(bridge2Y);
+                    }
+                }
+                if (bridge2XSlider && W > 0) {
+                    bridge2XSlider.max = Math.max(W, 200);
+                    if (parseFloat(bridge2XSlider.value) > W) {
+                        bridge2XSlider.value = W / 2;
+                        bridge2X = W / 2;
+                        document.getElementById('bridge2XValue').textContent = Math.round(bridge2X);
+                    }
+                }
+                
+                let hanziPath = convertToPaperPath(otPath);
+                if (!hanziPath) {
+                    console.error('汉字路径转换失败 - hanziPath 为 null');
+                    new paper.PointText({ 
+                        point: paper.view.center, 
+                        content: '路径转换失败，请检查字体文件\n请打开控制台查看详细错误信息', 
+                        fillColor: '#ef4444', 
+                        fontSize: 18, 
+                        justification: 'center' 
+                    });
+                    paper.view.draw();
+                    return;
+                }
+                
+                // 检查路径是否有效（支持 Path 和 CompoundPath）
+                let isValidPath = false;
+                if (hanziPath instanceof paper.Path) {
+                    // 普通路径：检查 segments
+                    isValidPath = hanziPath.segments && hanziPath.segments.length > 0;
+                    if (isValidPath) {
+                        console.log('路径转换成功（Path），段数:', hanziPath.segments.length);
+                    }
+                } else if (hanziPath instanceof paper.CompoundPath) {
+                    // 复合路径：检查 children 或 segments
+                    const hasChildren = hanziPath.children && hanziPath.children.length > 0;
+                    const hasSegments = hanziPath.segments && hanziPath.segments.length > 0;
+                    isValidPath = hasChildren || hasSegments;
+                    if (isValidPath) {
+                        console.log('路径转换成功（CompoundPath），子路径数:', hasChildren ? hanziPath.children.length : 0, '段数:', hasSegments ? hanziPath.segments.length : 0);
+                    }
+                }
+                
+                if (!isValidPath) {
+                    console.error('汉字路径转换失败 - 路径无效');
+                    console.error('路径对象:', hanziPath);
+                    console.error('路径类型:', hanziPath.constructor.name);
+                    
+                    // 如果是 CompoundPath，检查子路径
+                    if (hanziPath instanceof paper.CompoundPath && hanziPath.children) {
+                        console.log('是 CompoundPath，子路径数量:', hanziPath.children.length);
+                        for (let i = 0; i < hanziPath.children.length; i++) {
+                            const child = hanziPath.children[i];
+                            console.log(`子路径 ${i}:`, child.constructor.name, '段数:', child.segments ? child.segments.length : 0);
+                        }
+                    }
+                    
+                    new paper.PointText({ 
+                        point: paper.view.center, 
+                        content: '路径转换失败：路径无效\n请打开控制台查看详细错误信息', 
+                        fillColor: '#ef4444', 
+                        fontSize: 16, 
+                        justification: 'center' 
+                    });
+                    paper.view.draw();
+                    return;
+                }
+                
+                // 缩放路径
+                try {
+                    hanziPath.scale(scaleFactor);
+                } catch (e) {
+                    console.error('缩放路径失败:', e);
+                    return;
+                }
+                
+                // 将路径中心点移动到原点（0,0）
+                try {
+                    const bounds = hanziPath.bounds;
+                    const centerX = (bounds.left + bounds.right) / 2;
+                    const centerY = (bounds.top + bounds.bottom) / 2;
+                    hanziPath.translate([-centerX, -centerY]);
+                } catch (e) {
+                    console.error('居中路径失败:', e);
+                    // 如果居中失败，至少尝试移动到原点附近
+                    try {
+                        hanziPath.position = new paper.Point(0, 0);
+                    } catch (e2) {
+                        console.error('设置位置失败:', e2);
+                    }
+                }
+
+                // 2. 计算卯眼孔位 (仅保留底部的2个横槽，用于插入大底板)
+                // 2. 动态计算卯眼孔位 (根据 baseSupportType 决定底部是双孔还是单孔)
+                const holeW_H = mainTenonWidth - kerf; const holeH_H = T - kerf;
+                const botY = innerYSpacing / 2 + offsetY;
+                const leftX = -innerXSpacing/2 + offsetX;
+                const rightX = innerXSpacing/2 + offsetX;
+                const centerX = offsetX;
+
+                let holesCoords = [];
+                if (baseSupportType === 'dual') {
+                    holesCoords = [
+                        { x: leftX, y: botY, w: holeW_H, h: holeH_H },
+                        { x: rightX, y: botY, w: holeW_H, h: holeH_H }
+                    ];
+                } else {
+                    holesCoords = [
+                        { x: centerX, y: botY, w: holeW_H, h: holeH_H }
+                    ];
+                }
+
+                let frontPanel = hanziPath.clone();
+                let backPanel = hanziPath.clone();
+                let blueMarkers = [];
+
+                // 3. 挖孔 (只在底部挖2个孔)
+                holesCoords.forEach(coord => {
+                    const holeRect = new paper.Path.Rectangle({
+                        point: [coord.x - coord.w/2, coord.y - coord.h/2],
+                        size: [coord.w, coord.h]
+                    });
+                    try {
+                        let newFront = frontPanel.subtract(holeRect);
+                        let newBack = backPanel.subtract(holeRect);
+                        frontPanel.remove(); backPanel.remove();
+                        frontPanel = newFront; backPanel = newBack;
+                    } catch(e) {
+                        holeRect.strokeColor = '#3b82f6'; holeRect.strokeWidth = 2; holeRect.fillColor = null;
+                        blueMarkers.push(holeRect);
+                    }
+                });
+
+                // 3.5. 笔画延生连接（两组伪笔画，按开关决定是否启用）
+                const addBridges = (front, back) => {
+                    const performUnion = (panel, bridge) => {
+                        try {
+                            const result = panel.unite(bridge.clone({ insert: false }));
+                            panel.remove();
+                            return result; // 绝不使用 simplify()
+                        } catch (e) { return panel; }
+                    };
+
+                    if (bridgeH1Enabled) {
+                        const h1Y = bridgeY - H / 2;
+                        const hBridge1 = new paper.Path.Rectangle({
+                            point: [bridgeH_OffsetX - bridgeH_Length / 2, h1Y - bridgeHeight / 2],
+                            size: [bridgeH_Length, bridgeHeight], insert: false
+                        });
+                        front = performUnion(front, hBridge1);
+                        back = performUnion(back, hBridge1);
+                    }
+                    if (bridgeV1Enabled) {
+                        const v1X = bridgeX - W / 2;
+                        const vBridge1 = new paper.Path.Rectangle({
+                            point: [v1X - bridgeWidth / 2, bridgeV_OffsetY - bridgeV_Length / 2],
+                            size: [bridgeWidth, bridgeV_Length], insert: false
+                        });
+                        front = performUnion(front, vBridge1);
+                        back = performUnion(back, vBridge1);
+                    }
+                    if (bridgeH2Enabled) {
+                        const h2Y = bridge2Y - H / 2;
+                        const hBridge2 = new paper.Path.Rectangle({
+                            point: [bridge2H_OffsetX - bridge2H_Length / 2, h2Y - bridge2Height / 2],
+                            size: [bridge2H_Length, bridge2Height], insert: false
+                        });
+                        front = performUnion(front, hBridge2);
+                        back = performUnion(back, hBridge2);
+                    }
+                    if (bridgeV2Enabled) {
+                        const v2X = bridge2X - W / 2;
+                        const vBridge2 = new paper.Path.Rectangle({
+                            point: [v2X - bridge2Width / 2, bridge2V_OffsetY - bridge2V_Length / 2],
+                            size: [bridge2Width, bridge2V_Length], insert: false
+                        });
+                        front = performUnion(front, vBridge2);
+                        back = performUnion(back, vBridge2);
+                    }
+
+                    return { front, back };
+                };
+
+                try {
+                    const bridged = addBridges(frontPanel, backPanel);
+                    frontPanel = bridged.front;
+                    backPanel = bridged.back;
+                } catch (e) {
+                    console.error('笔画延生连接失败:', e);
+                }
+
+                // 4. 生成内部骨架：左右两块无侧榫的侧板 + 底部带槽的大底板
+                function createSidePanel() {
+                    const h = sidePanelHeight; // 使用动态高度变量
+                    let panel = new paper.Path.Rectangle({ point: [-D/2, -h/2], size: [D, h] });
+                    // 侧板底部的榫头位置也需要根据新高度 h 重新计算 (h/2 确保在底部边缘)
+                    const bot_tenon = new paper.Path.Rectangle({ point: [-(sideTenonWidth + kerf)/2, h/2], size: [sideTenonWidth + kerf, T + kerf] });
+                    try { panel = panel.unite(bot_tenon); } catch(e) {}
+                    return panel;
+                }
+                const leftSide = createSidePanel();
+                const rightSide = createSidePanel();
+
+                function createBottomPlate() {
+                    const bpW = innerXSpacing + 20;
+                    let plate = new paper.Path.Rectangle({ point: [-bpW/2, -D/2], size: [bpW, D] });
+
+                    // 1. 顶部和底部的凸榫 (与主面板连接) -> 凸榫变大 (+kerf)
+                    const tabW = mainTenonWidth + kerf;
+                    const tabH = T + kerf;
+                    if (baseSupportType === 'dual') {
+                        const fl = new paper.Path.Rectangle({ point: [-innerXSpacing/2 - tabW/2, D/2], size: [tabW, tabH] });
+                        const fr = new paper.Path.Rectangle({ point: [innerXSpacing/2 - tabW/2, D/2], size: [tabW, tabH] });
+                        const bl = new paper.Path.Rectangle({ point: [-innerXSpacing/2 - tabW/2, -D/2 - tabH], size: [tabW, tabH] });
+                        const br = new paper.Path.Rectangle({ point: [innerXSpacing/2 - tabW/2, -D/2 - tabH], size: [tabW, tabH] });
+                        try { plate = plate.unite(fl).unite(fr).unite(bl).unite(br); } catch(e) {}
+                    } else {
+                        const f_center = new paper.Path.Rectangle({ point: [-tabW/2, D/2], size: [tabW, tabH] });
+                        const b_center = new paper.Path.Rectangle({ point: [-tabW/2, -D/2 - tabH], size: [tabW, tabH] });
+                        try { plate = plate.unite(f_center).unite(b_center); } catch(e) {}
+                    }
+
+                    // 2. 左右两侧的卯眼孔洞 (与侧板连接) -> 孔洞变小 (-kerf)
+                    const holeW = T - kerf;
+                    const holeH = sideTenonWidth - kerf;
+                    const left_hole = new paper.Path.Rectangle({ point: [-innerXSpacing/2 - holeW/2, -holeH/2], size: [holeW, holeH] });
+                    const right_hole = new paper.Path.Rectangle({ point: [innerXSpacing/2 - holeW/2, -holeH/2], size: [holeW, holeH] });
+                    try {
+                        plate = plate.subtract(left_hole).subtract(right_hole);
+                    } catch(e) {}
+                    return plate;
+                }
+                const bottomPlate = createBottomPlate();
+
+                // 清洗路径：去除冗余顶点、重组拓扑，供 3D 拉伸减少三角剖分失败（原生支持孔洞）
+                function cleanPathFor3D(path) {
+                    if (!path) return null;
+                    var eps = 0.08;
+                    try {
+                        // CompoundPath：保留所有子路径（外轮廓 + 孔洞），逐条清洗
+                        if (path.children && path.children.length > 0) {
+                            var compound = new paper.CompoundPath();
+                            for (var c = 0; c < path.children.length; c++) {
+                                var child = path.children[c];
+                                var segs = child.segments;
+                                if (!segs || segs.length < 2) continue;
+                                var points = [];
+                                for (var i = 0; i < segs.length; i++) {
+                                    var p = segs[i].point;
+                                    if (points.length === 0 || p.getDistance(points[points.length - 1]) > eps)
+                                        points.push(p.clone());
+                                }
+                                if (child.closed && points.length > 1)
+                                    points.push(points[0].clone());
+                                var subPath = new paper.Path(points);
+                                if (child.closed) subPath.closePath();
+                                compound.addChild(subPath);
+                            }
+                            return compound.children.length > 0 ? compound : path.clone();
+                        }
+                        // 单一路径
+                        var segs = path.segments;
+                        if (!segs || segs.length < 2) return path.clone();
+                        var points = [];
+                        for (var i = 0; i < segs.length; i++) {
+                            var p = segs[i].point;
+                            if (points.length === 0 || p.getDistance(points[points.length - 1]) > eps)
+                                points.push(p.clone());
+                        }
+                        if (path.closed && points.length > 1)
+                            points.push(points[0].clone());
+                        var newPath = new paper.Path(points);
+                        if (path.closed) newPath.closePath();
+                        return newPath;
+                    } catch (e) {
+                        return path.clone();
+                    }
+                }
+
+                // 供 3D 使用（使用清洗后的路径）
+                computedParts.front = cleanPathFor3D(frontPanel); if (computedParts.front) centerPath(computedParts.front);
+                computedParts.back = cleanPathFor3D(backPanel); if (computedParts.back) centerPath(computedParts.back);
+                computedParts.sideL = cleanPathFor3D(leftSide); if (computedParts.sideL) centerPath(computedParts.sideL);
+                computedParts.sideR = cleanPathFor3D(rightSide); if (computedParts.sideR) centerPath(computedParts.sideR);
+                computedParts.bottom = cleanPathFor3D(bottomPlate); if (computedParts.bottom) centerPath(computedParts.bottom);
+
+                // 5. 将生成的零件排版到屏幕上可见的位置
+                const drawItem = (item, x, y, title) => {
+                    item.strokeColor = '#ef4444'; // 红色切割线
+                    item.strokeWidth = 1;
+                    item.fillColor = null;
+                    item.bounds.topLeft = new paper.Point(x * scale, y * scale);
+                    paper.project.activeLayer.addChild(item);
+                    
+                    new paper.PointText({
+                        point: [x * scale + item.bounds.width/2, y * scale - 10],
+                        content: title, fillColor: '#4b5563', fontSize: 14, fontWeight: 'bold', justification: 'center'
+                    });
+                };
+                
+                const drawMarkers = (markers, refPanel, refX, refY) => {
+                    markers.forEach(m => { 
+                        m.bounds.center = new paper.Point(
+                            refPanel.bounds.center.x + m.position.x * scale, 
+                            refPanel.bounds.center.y + m.position.y * scale
+                        );
+                        paper.project.activeLayer.addChild(m); 
+                    });
+                };
+
+                let currentY = 30;
+                // 保存用于导出的面板克隆（1 单位 = 1mm，无 scale 与排版偏移）
+                window.exportPanels = {
+                    front: frontPanel.clone(),
+                    back: backPanel.clone(),
+                    left: leftSide.clone(),
+                    right: rightSide.clone(),
+                    bottom: bottomPlate.clone()
+                };
+                drawItem(frontPanel, 20, currentY, '正面立面');
+                drawMarkers(blueMarkers, frontPanel, 20, currentY);
+                drawItem(backPanel, 40 + W, currentY, '背面立面');
+
+                currentY += Math.max(H, 100) + 40;
+                drawItem(leftSide, 20, currentY, '左侧板');
+                drawItem(rightSide, 40 + D + T*2, currentY, '右侧板');
+                drawItem(bottomPlate, 60 + D*2 + T*4, currentY, '大底板');
+
+                paper.view.draw();
+                if (typeof update3DModel === 'function') update3DModel();
+
+            } catch (err) {
+                console.error("渲染遇到错误:", err);
+                // 显示错误信息
+                try {
+                    new paper.PointText({ 
+                        point: paper.view.center, 
+                        content: '渲染错误: ' + err.message, 
+                        fillColor: '#ef4444', 
+                        fontSize: 16, 
+                        justification: 'center' 
+                    });
+                    paper.view.draw();
+                } catch (e) {
+                    console.error('无法显示错误信息:', e);
+                }
+            }
+        }
+
+        // 【材质引擎】椴木 PBR + 单例材质与版本锁，消除异步重影
+        let materialTextureLoader = null;
+        function getTextureLoader() {
+            if (typeof THREE === 'undefined') return null;
+            if (!materialTextureLoader) materialTextureLoader = new THREE.TextureLoader();
+            return materialTextureLoader;
+        }
+        function getMaterial(type) {
+            const commonSettings = {
+                side: THREE.DoubleSide, depthWrite: true, depthTest: true,
+                polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1
+            };
+            switch (type) {
+                case 'wood':
+                    if (!woodMaterialInstance) {
+                        woodMaterialInstance = new THREE.MeshStandardMaterial({
+                            color: 0xffffff, // 纯白底色，不干扰贴图本身颜色
+                            roughness: 0.85, 
+                            metalness: 0.1, 
+                            ...commonSettings
+                        });
+                        const loader = getTextureLoader();
+                        if (loader) {
+                            loader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/hardwood2_diffuse.jpg', (tex) => {
+                                tex.wrapS = THREE.RepeatWrapping;
+                                tex.wrapT = THREE.RepeatWrapping;
+                                // 调整为适合整个汉字宽度的重复率
+                                tex.repeat.set(0.008, 0.008); 
+                                woodMaterialInstance.map = tex;
+                                woodMaterialInstance.needsUpdate = true;
+                                if (window.scene3D && window.scene3D.renderer) {
+                                    window.scene3D.renderer.render(window.scene3D.scene, window.scene3D.camera);
+                                }
+                            }, undefined, (err) => {
+                                console.warn('木纹贴图加载失败', err);
+                                // 如果加载失败，回退到经典的深色原木色
+                                woodMaterialInstance.color.setHex(0x8B5A2B); 
+                                woodMaterialInstance.needsUpdate = true;
+                            });
+                        }
+                    }
+                    return woodMaterialInstance;
+                case 'acrylic':
+                    return new THREE.MeshStandardMaterial({ 
+                        color: 0xcc0000,       // 鲜艳的红色
+                        roughness: 0.05,       // 极低粗糙度，产生锐利高光
+                        metalness: 0.1,        // 轻微金属感增加塑料的反光厚重度
+                        transparent: true,     // 开启透明
+                        opacity: 0.85,         // 设置为半透明
+                        ...commonSettings 
+                    });
+                case 'metal':
+                    return new THREE.MeshStandardMaterial({ color: 0xaaaaaa, roughness: 0.35, metalness: 0.85, ...commonSettings });
+                case 'default':
+                default:
+                    return new THREE.MeshLambertMaterial({ color: 0xffffff, ...commonSettings });
+            }
+        }
+
+        // 初始化 3D 场景（Three.js）
+        function init3D() {
+            if (typeof THREE === 'undefined') return;
+            const container = document.getElementById('threeContainer');
+            if (!container) return;
+            const width = container.clientWidth || 800;
+            const height = container.clientHeight || 600;
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xf3f4f6);
+            const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 5000);
+            camera.position.set(200, 150, 250);
+            camera.lookAt(0, 0, 0);
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(width, height);
+            renderer.setPixelRatio(window.devicePixelRatio || 1);
+            container.innerHTML = '';
+            container.appendChild(renderer.domElement);
+            const main3DGroup = new THREE.Group();
+            scene.add(main3DGroup);
+            // 【冷暖双打光】配合 Phong 材质，无环境贴图也能层次分明
+            const ambient = new THREE.AmbientLight(0xffffff, 0.28);
+            scene.add(ambient);
+            const warmLight = new THREE.DirectionalLight(0xffdd99, 0.75);
+            warmLight.position.set(120, 180, 120);
+            scene.add(warmLight);
+            const coolLight = new THREE.DirectionalLight(0xaaccff, 0.5);
+            coolLight.position.set(-100, 100, -120);
+            scene.add(coolLight);
+            const controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            const view3DContainer = document.getElementById('view3DContainer');
+            window.scene3D = { scene, camera, renderer, controls, main3DGroup, container, view3DContainer };
+            window.addEventListener('resize', function() {
+                const c = document.getElementById('threeContainer');
+                if (!c || !window.scene3D) return;
+                const w = c.clientWidth;
+                const h = c.clientHeight;
+                window.scene3D.camera.aspect = w / h;
+                window.scene3D.camera.updateProjectionMatrix();
+                window.scene3D.renderer.setSize(w, h);
+            });
+            // 单一动画循环，仅当 3D 视图可见时渲染，避免重复触发
+            (function animate3D() {
+                requestAnimationFrame(animate3D);
+                if (window.scene3D && window.scene3D.view3DContainer && !window.scene3D.view3DContainer.classList.contains('hidden') && window.scene3D.controls) {
+                    window.scene3D.controls.update();
+                    window.scene3D.renderer.render(window.scene3D.scene, window.scene3D.camera);
+                }
+            })();
+        }
+
+        // Paper.js 路径 → SVG 字符串（供 SVGLoader 解析）
+        function paperPathToSVGString(paperPath) {
+            if (!paperPath) return '';
+            try {
+                const el = paperPath.exportSVG();
+                const svgNs = 'http://www.w3.org/2000/svg';
+                const svg = document.createElementNS(svgNs, 'svg');
+                svg.setAttribute('xmlns', svgNs);
+                const b = paperPath.bounds;
+                svg.setAttribute('viewBox', [b.left, b.top, b.width, b.height].join(' '));
+                if (el) svg.appendChild(el);
+                return new XMLSerializer().serializeToString(svg);
+            } catch (e) {
+                console.warn('paperPathToSVGString failed:', e);
+                return '';
+            }
+        }
+
+        // 使用 SVGLoader 解析 SVG 并拉伸为白模+黑线框（支持贝塞尔与镂空 CompoundPath）
+        function paperPathToMesh(paperPath, depth, done) {
+            if (typeof THREE === 'undefined' || !paperPath) {
+                if (done) done(null);
+                return;
+            }
+            const svgString = paperPathToSVGString(paperPath);
+            if (!svgString) {
+                if (done) done(null);
+                return;
+            }
+            const loader = new THREE.SVGLoader();
+            const blob = new Blob([svgString], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+            loader.load(url, function(data) {
+                URL.revokeObjectURL(url);
+                const group = new THREE.Group();
+                const currentMat = getMaterial(selectedMaterialType);
+                if (data.paths && data.paths.length) {
+                    data.paths.forEach(function(shapePath) {
+                        try {
+                            const shapes = THREE.SVGLoader.createShapes(shapePath);
+                            const shapeArray = Array.isArray(shapes) ? shapes : (shapes ? [shapes] : []);
+                            shapeArray.forEach(function(shape) {
+                                const geometry = new THREE.ExtrudeGeometry(shape, { depth: depth, bevelEnabled: false });
+                                geometry.center();
+
+                                geometry.scale(1, -1, 1);
+                                geometry.computeVertexNormals();
+
+                                const matToUse = (selectedMaterialType === 'acrylic' || selectedMaterialType === 'wood') ? currentMat : currentMat.clone();
+                                const mesh = new THREE.Mesh(geometry, matToUse);
+
+                                const edges = new THREE.EdgesGeometry(geometry, 15);
+                                const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({
+                                    color: 0x333333,
+                                    depthTest: true,
+                                    depthWrite: true
+                                }));
+                                mesh.add(line);
+
+                                group.add(mesh);
+                            });
+                        } catch (err) {
+                            console.warn('SVGLoader createShapes/Extrude failed:', err);
+                        }
+                    });
+                }
+                if (done) done(group.children.length > 0 ? group : null);
+            }, undefined, function(err) {
+                URL.revokeObjectURL(url);
+                console.warn('SVGLoader load failed:', err);
+                if (done) done(null);
+            });
+        }
+
+        // 更新3D模型（Three.js 组装，SVGLoader 异步加载 + 版本锁防重叠）
+        function update3DModel() {
+            if (typeof THREE === 'undefined' || !window.scene3D || !window.scene3D.main3DGroup) return;
+            if (!computedParts.front || !computedParts.back) return;
+            if (!computedParts.sideL || !computedParts.sideR || !computedParts.bottom) return;
+
+            renderGeneration++;
+            const currentGen = renderGeneration;
+
+            const main3DGroup = window.scene3D.main3DGroup;
+            while (main3DGroup.children.length) main3DGroup.remove(main3DGroup.children[0]);
+
+            const results = {};
+            let pending = 5;
+
+            function tryAssemble() {
+                if (currentGen !== renderGeneration) return;
+
+                pending--;
+                if (pending !== 0) return;
+
+                const { front: frontMesh, back: backMesh, sideL: sideLMesh, sideR: sideRMesh, bottom: bottomMesh } = results;
+                if (!frontMesh || !backMesh || !sideLMesh || !sideRMesh || !bottomMesh) return;
+
+                const bY = innerYSpacing / 2;
+                const lX = -innerXSpacing / 2 + offsetX;
+                const rX = innerXSpacing / 2 + offsetX;
+
+                frontMesh.position.set(0, 0, D / 2 + T / 2); main3DGroup.add(frontMesh);
+                backMesh.position.set(0, 0, -D / 2 - T / 2); backMesh.rotation.y = Math.PI; main3DGroup.add(backMesh);
+                bottomMesh.rotation.x = Math.PI / 2; bottomMesh.position.set(offsetX, -bY, 0); main3DGroup.add(bottomMesh);
+                sideLMesh.rotation.y = Math.PI / 2; sideLMesh.position.set(lX, -bY + sidePanelHeight / 2 + T / 2, 0); main3DGroup.add(sideLMesh);
+                sideRMesh.rotation.y = Math.PI / 2; sideRMesh.position.set(rX, -bY + sidePanelHeight / 2 + T / 2, 0); main3DGroup.add(sideRMesh);
+
+                main3DGroup.position.y = offsetY;
+                if (window.scene3D.controls) window.scene3D.controls.update();
+                if (window.scene3D.renderer) window.scene3D.renderer.render(window.scene3D.scene, window.scene3D.camera);
+            }
+
+            paperPathToMesh(computedParts.front, T, function(m) { results.front = m; tryAssemble(); });
+            paperPathToMesh(computedParts.back, T, function(m) { results.back = m; tryAssemble(); });
+            paperPathToMesh(computedParts.sideL, T, function(m) { results.sideL = m; tryAssemble(); });
+            paperPathToMesh(computedParts.sideR, T, function(m) { results.sideR = m; tryAssemble(); });
+            paperPathToMesh(computedParts.bottom, T, function(m) { results.bottom = m; tryAssemble(); });
+        }
+
+        // 初始化已通过 checkAllLoaded() 函数自动触发
+        // 如果动态加载失败，使用备用检查
+        setTimeout(() => {
+            if (typeof paper === 'undefined' || typeof opentype === 'undefined') {
+                waitForLibraries(() => {
+                    initializeApp();
+                    setTimeout(() => {
+                        if (typeof paper !== 'undefined') {
+                            render();
+                        }
+                    }, 150);
+                });
+            }
+        }, 2000);
+    </script>
+</body>
+</html>
