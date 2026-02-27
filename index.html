@@ -609,6 +609,34 @@
                     }
                 });
 
+                // 自动加载默认字体
+                (function loadDefaultFont() {
+                    try {
+                        paper.project.clear();
+                        new paper.PointText({
+                            point: paper.view.center,
+                            content: '正在为您加载默认字体...',
+                            fillColor: '#6b7280',
+                            fontSize: 20,
+                            justification: 'center'
+                        });
+                        paper.view.draw();
+                    } catch (e) {}
+                    fetch('./方正大黑简体.otf')
+                        .then(res => {
+                            if (!res.ok) throw new Error(res.status);
+                            return res.arrayBuffer();
+                        })
+                        .then(buf => {
+                            currentFont = opentype.parse(buf);
+                            render();
+                        })
+                        .catch(err => {
+                            console.warn('默认字体加载失败（如 404 或文件名不匹配），请手动载入字体文件', err);
+                            render();
+                        });
+                })();
+
                 UI.hanziInput.addEventListener('input', (e) => { 
                     currentHanzi = e.target.value || '福'; 
                     render(); 
