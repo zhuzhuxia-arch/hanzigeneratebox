@@ -719,27 +719,35 @@
                 });
             }
 
-            // 自动加载逻辑
-            const showMsg = (txt) => {
+            // 自动加载逻辑（直接放在 setup 之后，使用绝对路径避免 Vercel 路由问题）
+            const showCanvasMsg = (txt, color = '#4f46e5') => {
                 paper.project.clear();
-                new paper.PointText({ point: paper.view.center, content: txt, fillColor: '#4f46e5', justification: 'center' });
+                new paper.PointText({
+                    point: paper.view.center,
+                    content: txt,
+                    fillColor: color,
+                    fontSize: 18,
+                    justification: 'center'
+                });
                 paper.view.draw();
             };
 
-            showMsg('正在努力加载字体部件 (font.otf)...');
+            showCanvasMsg('正在从云端调拨字体零件 (font.otf)...');
 
-            fetch('./font.otf')
+            const fontUrl = new URL('font.otf', window.location.href).href;
+            fetch(fontUrl)
                 .then(res => {
-                    if (!res.ok) throw new Error('找不到文件');
+                    if (!res.ok) throw new Error('状态码: ' + res.status);
                     return res.arrayBuffer();
                 })
                 .then(buf => {
                     currentFont = opentype.parse(buf);
-                    render(); // 关键：加载完立刻画出来
+                    console.log('字体装载成功');
+                    render(); // 立即执行初次渲染
                 })
                 .catch(err => {
-                    console.error(err);
-                    showMsg('自动加载失败，请手动上传字体文件');
+                    console.error('加载失败:', err);
+                    showCanvasMsg('字体零件丢失 (404)，请检查 GitHub 仓库中是否存在 font.otf', '#ef4444');
                 });
         }
 
