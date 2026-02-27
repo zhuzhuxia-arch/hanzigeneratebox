@@ -250,9 +250,12 @@
 
         </div>
 
-        <div class="p-4 border-t border-gray-200 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-10">
+        <div class="p-4 border-t border-gray-200 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-10 space-y-2">
             <button id="exportBtn" class="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-300 font-bold shadow-md transition-all">
                 ↓ 下载 SVG 切割图纸
+            </button>
+            <button id="resetDefaultsBtn" type="button" class="w-full bg-gray-200 text-gray-700 py-2.5 px-4 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 text-sm font-medium transition-all">
+                恢复默认设置
             </button>
         </div>
     </aside>
@@ -609,20 +612,21 @@
                     }
                 });
 
-                // 自动加载默认字体
+                // 自动加载默认字体（使用 encodeURIComponent 避免中文路径 404）
                 (function loadDefaultFont() {
                     try {
                         paper.project.clear();
                         new paper.PointText({
                             point: paper.view.center,
-                            content: '正在为您加载默认字体...',
+                            content: '正在从服务器下载预设字体 (方正大黑)...',
                             fillColor: '#6b7280',
                             fontSize: 20,
                             justification: 'center'
                         });
                         paper.view.draw();
                     } catch (e) {}
-                    fetch('./方正大黑简体.otf')
+                    const fontPath = './' + encodeURIComponent('方正大黑简体.otf');
+                    fetch(fontPath)
                         .then(res => {
                             if (!res.ok) throw new Error(res.status);
                             return res.arrayBuffer();
@@ -632,7 +636,7 @@
                             render();
                         })
                         .catch(err => {
-                            console.warn('默认字体加载失败（如 404 或文件名不匹配），请手动载入字体文件', err);
+                            console.warn('默认字体加载失败（可尝试将仓库中的字体重命名为 font.otf 或手动载入）', fontPath, err);
                             render();
                         });
                 })();
@@ -689,7 +693,7 @@
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = `HanziStructure_${currentHanzi}_W${W}_D${D}_T${T}.svg`;
+                    a.download = `HanziBox_${currentHanzi}_T${T}_MainW${mainTenonWidth}_SideW${sideTenonWidth}_Kerf${kerf}.svg`;
                     a.click();
                     URL.revokeObjectURL(url);
                 });
@@ -699,6 +703,54 @@
                 if (materialSelect) {
                     materialSelect.addEventListener('change', (e) => {
                         selectedMaterialType = e.target.value;
+                        render();
+                    });
+                }
+                const resetDefaultsBtn = document.getElementById('resetDefaultsBtn');
+                if (resetDefaultsBtn) {
+                    resetDefaultsBtn.addEventListener('click', () => {
+                        const defaults = {
+                            width: 120, depth: 60, thickness: 3, sidePanelHeight: 50,
+                            mainTenonWidth: 10, sideTenonWidth: 10, kerf: 0.10,
+                            innerXSpacing: 60, innerYSpacing: 60, offsetX: 0, offsetY: 0,
+                            bridgeY: 60, bridgeHeight: 3, bridgeH_Length: 120, bridgeH_OffsetX: 0,
+                            bridgeX: 60, bridgeWidth: 3, bridgeV_Length: 120, bridgeV_OffsetY: 0,
+                            bridge2Y: 30, bridge2Height: 3, bridge2H_Length: 30, bridge2H_OffsetX: -30,
+                            bridge2X: 30, bridge2Width: 3, bridge2V_Length: 30, bridge2V_OffsetY: -30
+                        };
+                        W = defaults.width;
+                        D = defaults.depth;
+                        T = defaults.thickness;
+                        sidePanelHeight = defaults.sidePanelHeight;
+                        mainTenonWidth = defaults.mainTenonWidth;
+                        sideTenonWidth = defaults.sideTenonWidth;
+                        kerf = defaults.kerf;
+                        innerXSpacing = defaults.innerXSpacing;
+                        innerYSpacing = defaults.innerYSpacing;
+                        offsetX = defaults.offsetX;
+                        offsetY = defaults.offsetY;
+                        bridgeY = defaults.bridgeY;
+                        bridgeHeight = defaults.bridgeHeight;
+                        bridgeH_Length = defaults.bridgeH_Length;
+                        bridgeH_OffsetX = defaults.bridgeH_OffsetX;
+                        bridgeX = defaults.bridgeX;
+                        bridgeWidth = defaults.bridgeWidth;
+                        bridgeV_Length = defaults.bridgeV_Length;
+                        bridgeV_OffsetY = defaults.bridgeV_OffsetY;
+                        bridge2Y = defaults.bridge2Y;
+                        bridge2Height = defaults.bridge2Height;
+                        bridge2H_Length = defaults.bridge2H_Length;
+                        bridge2H_OffsetX = defaults.bridge2H_OffsetX;
+                        bridge2X = defaults.bridge2X;
+                        bridge2Width = defaults.bridge2Width;
+                        bridge2V_Length = defaults.bridge2V_Length;
+                        bridge2V_OffsetY = defaults.bridge2V_OffsetY;
+                        for (const [id, val] of Object.entries(defaults)) {
+                            const sl = document.getElementById(id + 'Slider');
+                            const v = document.getElementById(id + 'Value');
+                            if (sl) sl.value = String(val);
+                            if (v) v.value = String(val);
+                        }
                         render();
                     });
                 }
@@ -1476,21 +1528,23 @@
                         });
                         const loader = getTextureLoader();
                         if (loader) {
-                            loader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/hardwood2_diffuse.jpg', (tex) => {
+                            const applyWoodTexture = (tex) => {
                                 tex.wrapS = THREE.RepeatWrapping;
                                 tex.wrapT = THREE.RepeatWrapping;
-                                // 调整为适合整个汉字宽度的重复率
-                                tex.repeat.set(0.008, 0.008); 
+                                tex.repeat.set(0.008, 0.008);
                                 woodMaterialInstance.map = tex;
                                 woodMaterialInstance.needsUpdate = true;
                                 if (window.scene3D && window.scene3D.renderer) {
                                     window.scene3D.renderer.render(window.scene3D.scene, window.scene3D.camera);
                                 }
-                            }, undefined, (err) => {
+                            };
+                            const fallbackToColor = (err) => {
                                 console.warn('木纹贴图加载失败', err);
-                                // 如果加载失败，回退到经典的深色原木色
-                                woodMaterialInstance.color.setHex(0x8B5A2B); 
+                                woodMaterialInstance.color.setHex(0x8B5A2B);
                                 woodMaterialInstance.needsUpdate = true;
+                            };
+                            loader.load('./basswood.jpg', applyWoodTexture, undefined, () => {
+                                loader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/hardwood2_diffuse.jpg', applyWoodTexture, undefined, fallbackToColor);
                             });
                         }
                     }
