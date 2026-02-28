@@ -54,6 +54,7 @@
                     <div>
                         <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>基准宽度 W:</span> <span class="text-indigo-600"><input type="number" id="widthValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs font-bold bg-white text-indigo-700" min="50" max="300" value="120" step="1"> mm</span></label>
                         <input type="range" id="widthSlider" min="50" max="300" value="120" step="1" class="slider">
+                        <p id="heightHint" class="text-xs text-gray-500 mt-0.5">当前模型实际总高度 H: 约 — mm</p>
                     </div>
                     <div>
                         <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>总深度 D (含侧板):</span> <span class="text-indigo-600"><input type="number" id="depthValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs font-bold bg-white text-indigo-700" min="20" max="200" value="60" step="1"> mm</span></label>
@@ -122,116 +123,25 @@
             </details>
 
             <details class="group border-b border-gray-100">
-                <summary class="px-5 py-3 cursor-pointer list-none flex justify-between items-center bg-white hover:bg-green-50 transition-colors">
-                    <span class="font-bold text-sm text-green-700">4. 主搭桥设置 (组1)</span>
+                <summary class="px-5 py-3 cursor-pointer list-none flex justify-between items-center bg-white hover:bg-indigo-50 transition-colors">
+                    <span class="font-bold text-sm text-indigo-700">4. 自动防掉字处理</span>
                     <span class="text-gray-400 transition-transform group-open:rotate-180">▼</span>
                 </summary>
-                <div class="px-5 pb-3 pt-1">
-                    <div class="flex gap-4 flex-wrap">
-                        <label class="inline-flex items-center cursor-pointer">
-                            <input type="checkbox" id="bridgeH1EnabledCheckbox" checked class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                            <span class="ml-2 text-sm font-medium text-gray-700">主横向</span>
-                        </label>
-                        <label class="inline-flex items-center cursor-pointer">
-                            <input type="checkbox" id="bridgeV1EnabledCheckbox" checked class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                            <span class="ml-2 text-sm font-medium text-gray-700">主纵向</span>
-                        </label>
-                    </div>
-                </div>
                 <div class="px-5 pb-4 pt-1 space-y-3">
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="autoBridgeEnabledCheckbox" checked class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                        <span class="ml-2 text-sm font-medium text-gray-700">开启自动连筋</span>
+                    </label>
                     <div>
-                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>横向连筋Y位置:</span> <span class="text-green-600"><input type="number" id="bridgeYValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-green-500 text-xs font-bold bg-white text-green-700" min="0" max="200" value="60" step="1"> mm</span></label>
-                        <input type="range" id="bridgeYSlider" min="0" max="200" value="60" step="1" class="slider">
-                    </div>
-                    <div>
-                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>横向连筋粗细(高):</span> <span class="text-green-600"><input type="number" id="bridgeHeightValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-green-500 text-xs font-bold bg-white text-green-700" min="1" max="10" value="3" step="0.5"> mm</span></label>
-                        <input type="range" id="bridgeHeightSlider" min="1" max="10" value="3" step="0.5" class="slider">
-                    </div>
-                    <div>
-                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>横向连筋长度:</span> <span class="text-green-600"><input type="number" id="bridgeH_LengthValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-green-500 text-xs font-bold bg-white text-green-700" min="10" max="300" value="120" step="1"> mm</span></label>
-                        <input type="range" id="bridgeH_LengthSlider" min="10" max="300" value="120" step="1" class="slider">
-                    </div>
-                    <div>
-                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>横向连筋左右偏移:</span> <span class="text-green-600"><input type="number" id="bridgeH_OffsetXValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-green-500 text-xs font-bold bg-white text-green-700" min="-150" max="150" value="0" step="1"> mm</span></label>
-                        <input type="range" id="bridgeH_OffsetXSlider" min="-150" max="150" value="0" step="1" class="slider">
-                    </div>
-                    <hr class="border-dashed border-gray-200 my-2">
-                    <div>
-                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>纵向连筋X位置:</span> <span class="text-green-600"><input type="number" id="bridgeXValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-green-500 text-xs font-bold bg-white text-green-700" min="0" max="200" value="60" step="1"> mm</span></label>
-                        <input type="range" id="bridgeXSlider" min="0" max="200" value="60" step="1" class="slider">
-                    </div>
-                    <div>
-                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>纵向连筋粗细(宽):</span> <span class="text-green-600"><input type="number" id="bridgeWidthValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-green-500 text-xs font-bold bg-white text-green-700" min="1" max="10" value="3" step="0.5"> mm</span></label>
-                        <input type="range" id="bridgeWidthSlider" min="1" max="10" value="3" step="0.5" class="slider">
-                    </div>
-                    <div>
-                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>纵向连筋长度:</span> <span class="text-green-600"><input type="number" id="bridgeV_LengthValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-green-500 text-xs font-bold bg-white text-green-700" min="10" max="300" value="120" step="1"> mm</span></label>
-                        <input type="range" id="bridgeV_LengthSlider" min="10" max="300" value="120" step="1" class="slider">
-                    </div>
-                    <div>
-                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>纵向连筋上下偏移:</span> <span class="text-green-600"><input type="number" id="bridgeV_OffsetYValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-green-500 text-xs font-bold bg-white text-green-700" min="-150" max="150" value="0" step="1"> mm</span></label>
-                        <input type="range" id="bridgeV_OffsetYSlider" min="-150" max="150" value="0" step="1" class="slider">
-                    </div>
-                </div>
-            </details>
-
-            <details class="group border-b border-gray-100">
-                <summary class="px-5 py-3 cursor-pointer list-none flex justify-between items-center bg-white hover:bg-blue-50 transition-colors">
-                    <span class="font-bold text-sm text-blue-700">5. 辅搭桥设置 (组2-修补孤岛)</span>
-                    <span class="text-gray-400 transition-transform group-open:rotate-180">▼</span>
-                </summary>
-                <div class="px-5 pb-3 pt-1">
-                    <div class="flex gap-4 flex-wrap">
-                        <label class="inline-flex items-center cursor-pointer">
-                            <input type="checkbox" id="bridgeH2EnabledCheckbox" checked class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                            <span class="ml-2 text-sm font-medium text-gray-700">辅横向</span>
-                        </label>
-                        <label class="inline-flex items-center cursor-pointer">
-                            <input type="checkbox" id="bridgeV2EnabledCheckbox" checked class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                            <span class="ml-2 text-sm font-medium text-gray-700">辅纵向</span>
-                        </label>
-                    </div>
-                </div>
-                <div class="px-5 pb-4 pt-1 space-y-3">
-                    <div>
-                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>辅横连筋Y位置:</span> <span class="text-blue-600"><input type="number" id="bridge2YValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs font-bold bg-white text-blue-700" min="0" max="200" value="30" step="1"> mm</span></label>
-                        <input type="range" id="bridge2YSlider" min="0" max="200" value="30" step="1" class="slider">
-                    </div>
-                    <div>
-                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>辅横连筋粗细:</span> <span class="text-blue-600"><input type="number" id="bridge2HeightValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs font-bold bg-white text-blue-700" min="1" max="10" value="3" step="0.5"> mm</span></label>
-                        <input type="range" id="bridge2HeightSlider" min="1" max="10" value="3" step="0.5" class="slider">
-                    </div>
-                    <div>
-                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>辅横连筋长度:</span> <span class="text-blue-600"><input type="number" id="bridge2H_LengthValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs font-bold bg-white text-blue-700" min="10" max="300" value="30" step="1"> mm</span></label>
-                        <input type="range" id="bridge2H_LengthSlider" min="10" max="300" value="30" step="1" class="slider">
-                    </div>
-                    <div>
-                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>辅横连筋左右偏移:</span> <span class="text-blue-600"><input type="number" id="bridge2H_OffsetXValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs font-bold bg-white text-blue-700" min="-150" max="150" value="-30" step="1"> mm</span></label>
-                        <input type="range" id="bridge2H_OffsetXSlider" min="-150" max="150" value="-30" step="1" class="slider">
-                    </div>
-                    <hr class="border-dashed border-gray-200 my-2">
-                    <div>
-                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>辅纵连筋X位置:</span> <span class="text-blue-600"><input type="number" id="bridge2XValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs font-bold bg-white text-blue-700" min="0" max="200" value="30" step="1"> mm</span></label>
-                        <input type="range" id="bridge2XSlider" min="0" max="200" value="30" step="1" class="slider">
-                    </div>
-                    <div>
-                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>辅纵连筋粗细:</span> <span class="text-blue-600"><input type="number" id="bridge2WidthValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs font-bold bg-white text-blue-700" min="1" max="10" value="3" step="0.5"> mm</span></label>
-                        <input type="range" id="bridge2WidthSlider" min="1" max="10" value="3" step="0.5" class="slider">
-                    </div>
-                    <div>
-                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>辅纵连筋长度:</span> <span class="text-blue-600"><input type="number" id="bridge2V_LengthValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs font-bold bg-white text-blue-700" min="10" max="300" value="30" step="1"> mm</span></label>
-                        <input type="range" id="bridge2V_LengthSlider" min="10" max="300" value="30" step="1" class="slider">
-                    </div>
-                    <div>
-                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>辅纵连筋上下偏移:</span> <span class="text-blue-600"><input type="number" id="bridge2V_OffsetYValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs font-bold bg-white text-blue-700" min="-150" max="150" value="-30" step="1"> mm</span></label>
-                        <input type="range" id="bridge2V_OffsetYSlider" min="-150" max="150" value="-30" step="1" class="slider">
+                        <label class="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>连筋宽度:</span> <span class="text-indigo-600"><input type="number" id="autoBridgeWidthValue" class="w-16 px-1 py-0.5 text-right border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs font-bold bg-white text-indigo-700" min="1" max="10" value="3" step="0.5"> mm</span></label>
+                        <input type="range" id="autoBridgeWidthSlider" min="1" max="10" value="3" step="0.5" class="slider">
                     </div>
                 </div>
             </details>
 
             <details class="group border-b border-gray-100">
                 <summary class="px-5 py-3 cursor-pointer list-none flex justify-between items-center bg-white hover:bg-purple-50 transition-colors">
-                    <span class="font-bold text-sm text-purple-700">6. 3D 材质与渲染</span>
+                    <span class="font-bold text-sm text-purple-700">5. 3D 材质与渲染</span>
                     <span class="text-gray-400 transition-transform group-open:rotate-180">▼</span>
                 </summary>
                 <div class="px-5 pb-4 pt-1 space-y-3">
@@ -410,24 +320,9 @@
         let offsetX = 0; let offsetY = 0;
         let scale = 2; // SVG 显示缩放比例 (1mm = 2px)
         
-        // 连筋参数
-        let bridgeY = 60;      // 横向连筋Y位置
-        let bridgeHeight = 3;  // 横向连筋高度
-        let bridgeX = 60;      // 纵向连筋X位置
-        let bridgeWidth = 3;   // 纵向连筋宽度
-        let bridgeH_Length = 120;   // 横向连筋长度
-        let bridgeH_OffsetX = 0;   // 横向连筋左右移动
-        let bridgeV_Length = 120;   // 纵向连筋长度
-        let bridgeV_OffsetY = 0;   // 纵向连筋上下移动
-        
-        // 第二组连筋参数 (次级辅槽)
-        let bridge2Y = 30;     let bridge2Height = 3;  let bridge2H_Length = 30;  let bridge2H_OffsetX = -30;
-        let bridge2X = 30;     let bridge2Width = 3;   let bridge2V_Length = 30;  let bridge2V_OffsetY = -30;
-        
-        let bridgeH1Enabled = true;  // 主横向连筋
-        let bridgeV1Enabled = true;  // 主纵向连筋
-        let bridgeH2Enabled = true;  // 辅横向连筋
-        let bridgeV2Enabled = true;  // 辅纵向连筋
+        // 自动防掉字（Stencil 化）参数
+        let autoBridgeEnabled = true;   // 开启自动连筋
+        let autoBridgeWidth = 3;         // 连筋宽度 mm
         
         let baseSupportType = 'dual'; // 'dual' 表示双脚，'single' 表示单脚
         
@@ -531,31 +426,15 @@
             bindSlider('offsetX', (val) => { offsetX = val; });
             bindSlider('offsetY', (val) => { offsetY = val; });
 
-            bindSlider('bridgeY', (val) => { bridgeY = val; });
-            bindSlider('bridgeHeight', (val) => { bridgeHeight = val; });
-            bindSlider('bridgeH_Length', (val) => { bridgeH_Length = val; });
-            bindSlider('bridgeH_OffsetX', (val) => { bridgeH_OffsetX = val; });
-            bindSlider('bridgeX', (val) => { bridgeX = val; });
-            bindSlider('bridgeWidth', (val) => { bridgeWidth = val; });
-            bindSlider('bridgeV_Length', (val) => { bridgeV_Length = val; });
-            bindSlider('bridgeV_OffsetY', (val) => { bridgeV_OffsetY = val; });
-            bindSlider('bridge2Y', (val) => { bridge2Y = val; });
-            bindSlider('bridge2Height', (val) => { bridge2Height = val; });
-            bindSlider('bridge2H_Length', (val) => { bridge2H_Length = val; });
-            bindSlider('bridge2H_OffsetX', (val) => { bridge2H_OffsetX = val; });
-            bindSlider('bridge2X', (val) => { bridge2X = val; });
-            bindSlider('bridge2Width', (val) => { bridge2Width = val; });
-            bindSlider('bridge2V_Length', (val) => { bridge2V_Length = val; });
-            bindSlider('bridge2V_OffsetY', (val) => { bridge2V_OffsetY = val; });
+            bindSlider('autoBridgeWidth', (val) => { autoBridgeWidth = val; });
 
-            const bridgeH1El = document.getElementById('bridgeH1EnabledCheckbox');
-            const bridgeV1El = document.getElementById('bridgeV1EnabledCheckbox');
-            const bridgeH2El = document.getElementById('bridgeH2EnabledCheckbox');
-            const bridgeV2El = document.getElementById('bridgeV2EnabledCheckbox');
-            if (bridgeH1El) bridgeH1El.addEventListener('change', function() { bridgeH1Enabled = this.checked; render(); });
-            if (bridgeV1El) bridgeV1El.addEventListener('change', function() { bridgeV1Enabled = this.checked; render(); });
-            if (bridgeH2El) bridgeH2El.addEventListener('change', function() { bridgeH2Enabled = this.checked; render(); });
-            if (bridgeV2El) bridgeV2El.addEventListener('change', function() { bridgeV2Enabled = this.checked; render(); });
+            const autoBridgeCheckbox = document.getElementById('autoBridgeEnabledCheckbox');
+            if (autoBridgeCheckbox) {
+                autoBridgeCheckbox.addEventListener('change', function() {
+                    autoBridgeEnabled = this.checked;
+                    render();
+                });
+            }
 
             const radioButtons = document.querySelectorAll('input[name="baseType"]');
             radioButtons.forEach(radio => {
@@ -672,51 +551,41 @@
 
             const resetDefaultsBtn = document.getElementById('resetDefaultsBtn');
             if (resetDefaultsBtn) {
-                resetDefaultsBtn.addEventListener('click', () => {
-                    const defaults = {
-                        width: 120, depth: 60, thickness: 3, sidePanelHeight: 50,
-                        mainTenonWidth: 10, sideTenonWidth: 10, kerf: 0.10,
-                        innerXSpacing: 60, innerYSpacing: 60, offsetX: 0, offsetY: 0,
-                        bridgeY: 60, bridgeHeight: 3, bridgeH_Length: 120, bridgeH_OffsetX: 0,
-                        bridgeX: 60, bridgeWidth: 3, bridgeV_Length: 120, bridgeV_OffsetY: 0,
-                        bridge2Y: 30, bridge2Height: 3, bridge2H_Length: 30, bridge2H_OffsetX: -30,
-                        bridge2X: 30, bridge2Width: 3, bridge2V_Length: 30, bridge2V_OffsetY: -30
-                    };
-                    W = defaults.width;
-                    D = defaults.depth;
-                    T = defaults.thickness;
-                    sidePanelHeight = defaults.sidePanelHeight;
-                    mainTenonWidth = defaults.mainTenonWidth;
-                    sideTenonWidth = defaults.sideTenonWidth;
-                    kerf = defaults.kerf;
-                    innerXSpacing = defaults.innerXSpacing;
-                    innerYSpacing = defaults.innerYSpacing;
-                    offsetX = defaults.offsetX;
-                    offsetY = defaults.offsetY;
-                    bridgeY = defaults.bridgeY;
-                    bridgeHeight = defaults.bridgeHeight;
-                    bridgeH_Length = defaults.bridgeH_Length;
-                    bridgeH_OffsetX = defaults.bridgeH_OffsetX;
-                    bridgeX = defaults.bridgeX;
-                    bridgeWidth = defaults.bridgeWidth;
-                    bridgeV_Length = defaults.bridgeV_Length;
-                    bridgeV_OffsetY = defaults.bridgeV_OffsetY;
-                    bridge2Y = defaults.bridge2Y;
-                    bridge2Height = defaults.bridge2Height;
-                    bridge2H_Length = defaults.bridge2H_Length;
-                    bridge2H_OffsetX = defaults.bridge2H_OffsetX;
-                    bridge2X = defaults.bridge2X;
-                    bridge2Width = defaults.bridge2Width;
-                    bridge2V_Length = defaults.bridge2V_Length;
-                    bridge2V_OffsetY = defaults.bridge2V_OffsetY;
-                    for (const [id, val] of Object.entries(defaults)) {
-                        const sl = document.getElementById(id + 'Slider');
-                        const v = document.getElementById(id + 'Value');
-                        if (sl) sl.value = String(val);
-                        if (v) v.value = String(val);
-                    }
-                    render();
-                });
+                    resetDefaultsBtn.addEventListener('click', () => {
+                        const defaults = {
+                            width: 120, depth: 60, thickness: 3, sidePanelHeight: 50,
+                            mainTenonWidth: 10, sideTenonWidth: 10, kerf: 0.10,
+                            innerXSpacing: 60, innerYSpacing: 60, offsetX: 0, offsetY: 0,
+                            autoBridgeWidth: 3
+                        };
+                        W = defaults.width;
+                        D = defaults.depth;
+                        T = defaults.thickness;
+                        sidePanelHeight = defaults.sidePanelHeight;
+                        mainTenonWidth = defaults.mainTenonWidth;
+                        sideTenonWidth = defaults.sideTenonWidth;
+                        kerf = defaults.kerf;
+                        innerXSpacing = defaults.innerXSpacing;
+                        innerYSpacing = defaults.innerYSpacing;
+                        offsetX = defaults.offsetX;
+                        offsetY = defaults.offsetY;
+                        autoBridgeWidth = defaults.autoBridgeWidth;
+                        const autoCb = document.getElementById('autoBridgeEnabledCheckbox');
+                        if (autoCb) autoCb.checked = true;
+                        autoBridgeEnabled = true;
+                        const sl = document.getElementById('autoBridgeWidthSlider');
+                        const v = document.getElementById('autoBridgeWidthValue');
+                        if (sl) sl.value = String(defaults.autoBridgeWidth);
+                        if (v) v.value = String(defaults.autoBridgeWidth);
+                        for (const [id, val] of Object.entries(defaults)) {
+                            if (id === 'autoBridgeWidth') continue;
+                            const sl = document.getElementById(id + 'Slider');
+                            const v = document.getElementById(id + 'Value');
+                            if (sl) sl.value = String(val);
+                            if (v) v.value = String(val);
+                        }
+                        render();
+                    });
             }
 
             // 自动加载逻辑（直接放在 setup 之后，使用绝对路径避免 Vercel 路由问题）
@@ -1113,44 +982,8 @@
                 
                 H = W * (fontH / fontW); 
                 const scaleFactor = W / fontW;
-                
-                // 更新连筋滑块范围（动态跟随汉字尺寸）
-                const bridgeYSlider = document.getElementById('bridgeYSlider');
-                const bridgeXSlider = document.getElementById('bridgeXSlider');
-                const bridge2YSlider = document.getElementById('bridge2YSlider');
-                const bridge2XSlider = document.getElementById('bridge2XSlider');
-                if (bridgeYSlider && H > 0) {
-                    bridgeYSlider.max = Math.max(H, 200);
-                    if (parseFloat(bridgeYSlider.value) > H) {
-                        bridgeYSlider.value = H / 2;
-                        bridgeY = H / 2;
-                        document.getElementById('bridgeYValue').textContent = Math.round(bridgeY);
-                    }
-                }
-                if (bridgeXSlider && W > 0) {
-                    bridgeXSlider.max = Math.max(W, 200);
-                    if (parseFloat(bridgeXSlider.value) > W) {
-                        bridgeXSlider.value = W / 2;
-                        bridgeX = W / 2;
-                        document.getElementById('bridgeXValue').textContent = Math.round(bridgeX);
-                    }
-                }
-                if (bridge2YSlider && H > 0) {
-                    bridge2YSlider.max = Math.max(H, 200);
-                    if (parseFloat(bridge2YSlider.value) > H) {
-                        bridge2YSlider.value = H / 2;
-                        bridge2Y = H / 2;
-                        document.getElementById('bridge2YValue').textContent = Math.round(bridge2Y);
-                    }
-                }
-                if (bridge2XSlider && W > 0) {
-                    bridge2XSlider.max = Math.max(W, 200);
-                    if (parseFloat(bridge2XSlider.value) > W) {
-                        bridge2XSlider.value = W / 2;
-                        bridge2X = W / 2;
-                        document.getElementById('bridge2XValue').textContent = Math.round(bridge2X);
-                    }
-                }
+                const heightHintEl = document.getElementById('heightHint');
+                if (heightHintEl) heightHintEl.textContent = '当前模型实际总高度 H: 约 ' + H.toFixed(1) + ' mm';
                 
                 let hanziPath = convertToPaperPath(otPath);
                 if (!hanziPath) {
@@ -1233,6 +1066,160 @@
                     }
                 }
 
+                // 自动防掉字：桥接断开的独立部件（Island），不处理口/田等孔洞
+                if (autoBridgeEnabled && hanziPath) {
+                    try {
+                        const bridgeW = Math.max(0.5, autoBridgeWidth);
+                        let islands = [];
+
+                        if (hanziPath instanceof paper.CompoundPath && hanziPath.children && hanziPath.children.length > 0) {
+                            const outers = [];
+                            const holes = [];
+                            for (let i = 0; i < hanziPath.children.length; i++) {
+                                const child = hanziPath.children[i];
+                                try {
+                                    const area = typeof child.area === 'function' ? child.area() : child.area;
+                                    const isHole = (typeof area === 'number' && area < 0) || (child.clockwise === true);
+                                    if (isHole) holes.push(child);
+                                    else outers.push(child);
+                                } catch (e) { outers.push(child); }
+                            }
+                            for (let i = 0; i < outers.length; i++) {
+                                const outer = outers[i];
+                                try {
+                                    const comp = new paper.CompoundPath({ insert: false });
+                                    comp.addChild(outer.clone());
+                                    for (let h = 0; h < holes.length; h++) {
+                                        try {
+                                            const hole = holes[h];
+                                            const c = hole.bounds ? hole.bounds.center : hole.position;
+                                            if (outer.contains(c)) comp.addChild(hole.clone());
+                                        } catch (e2) {}
+                                    }
+                                    islands.push(comp);
+                                } catch (e) {
+                                    try {
+                                        islands.push(outer.clone());
+                                    } catch (e2) { console.warn('岛提取失败:', e2); }
+                                }
+                            }
+                            if (islands.length === 0 && outers.length > 0) {
+                                outers.forEach(function(o) { try { islands.push(o.clone()); } catch (e) {} });
+                            }
+                        } else if (hanziPath instanceof paper.Path) {
+                            try { islands.push(hanziPath.clone()); } catch (e) {}
+                        }
+
+                        while (islands.length > 1) {
+                            let bestDist = Infinity;
+                            let bestA = null, bestB = null, bestI = 0, bestJ = 0;
+
+                            function samplePoints(path, n) {
+                                const pts = [];
+                                try {
+                                    const len = path.length;
+                                    if (len <= 0 && path.segments && path.segments.length > 0) {
+                                        path.segments.forEach(function(s) { if (s.point) pts.push(s.point); });
+                                        return pts;
+                                    }
+                                    const step = Math.max(len / n, 0.5);
+                                    for (let o = 0; o <= len; o += step) {
+                                        const p = path.getPointAt(o);
+                                        if (p) pts.push(p);
+                                    }
+                                } catch (e) {
+                                    if (path.segments) path.segments.forEach(function(s) { if (s.point) pts.push(s.point); });
+                                }
+                                return pts;
+                            }
+
+                            for (let i = 0; i < islands.length; i++) {
+                                for (let j = i + 1; j < islands.length; j++) {
+                                    const ptsI = samplePoints(islands[i], 24);
+                                    const ptsJ = samplePoints(islands[j], 24);
+                                    for (let pi = 0; pi < ptsI.length; pi++) {
+                                        try {
+                                            const p = ptsI[pi];
+                                            const nearest = islands[j].getNearestPoint(p);
+                                            const d = p.getDistance(nearest);
+                                            if (d < bestDist && d > 1e-6) {
+                                                bestDist = d;
+                                                bestA = p;
+                                                bestB = nearest;
+                                                bestI = i;
+                                                bestJ = j;
+                                            }
+                                        } catch (e) {}
+                                    }
+                                    for (let pj = 0; pj < ptsJ.length; pj++) {
+                                        try {
+                                            const p = ptsJ[pj];
+                                            const nearest = islands[i].getNearestPoint(p);
+                                            const d = p.getDistance(nearest);
+                                            if (d < bestDist && d > 1e-6) {
+                                                bestDist = d;
+                                                bestA = nearest;
+                                                bestB = p;
+                                                bestI = i;
+                                                bestJ = j;
+                                            }
+                                        } catch (e) {}
+                                    }
+                                }
+                            }
+
+                            if (bestA === null || bestB === null) {
+                                console.warn('自动连筋：无法找到可连接岛对，停止');
+                                break;
+                            }
+
+                            try {
+                                const len = bestA.getDistance(bestB);
+                                const center = bestA.add(bestB).divide(2);
+                                const angle = Math.atan2(bestB.y - bestA.y, bestB.x - bestA.x);
+                                const deg = (angle * 180 / Math.PI);
+                                const bridgeRect = new paper.Path.Rectangle({
+                                    point: [-len / 2, -bridgeW / 2],
+                                    size: [len, bridgeW],
+                                    insert: false
+                                });
+                                bridgeRect.rotate(deg, center);
+
+                                let merged = islands[bestI].unite(bridgeRect);
+                                if (merged) {
+                                    try {
+                                        merged = merged.unite(islands[bestJ]);
+                                    } catch (e) { merged = null; }
+                                }
+                                if (merged) {
+                                    try {
+                                        islands[bestI].remove();
+                                        islands[bestJ].remove();
+                                    } catch (e) {}
+                                    islands = islands.filter(function(_, idx) { return idx !== bestI && idx !== bestJ; });
+                                    islands.push(merged);
+                                    console.log('自动连筋：成功连接一对岛，剩余岛数', islands.length);
+                                } else {
+                                    console.warn('自动连筋：unite 失败，跳过该对');
+                                    break;
+                                }
+                            } catch (err) {
+                                console.warn('自动连筋失败:', err);
+                                break;
+                            }
+                        }
+
+                        if (islands.length === 1) {
+                            try {
+                                hanziPath.remove();
+                                hanziPath = islands[0];
+                            } catch (e) {}
+                        }
+                    } catch (err) {
+                        console.error('自动防掉字处理异常:', err);
+                    }
+                }
+
                 // 2. 计算卯眼孔位 (仅保留底部的2个横槽，用于插入大底板)
                 // 2. 动态计算卯眼孔位 (根据 baseSupportType 决定底部是双孔还是单孔)
                 const holeW_H = mainTenonWidth - kerf; const holeH_H = T - kerf;
@@ -1273,64 +1260,6 @@
                         blueMarkers.push(holeRect);
                     }
                 });
-
-                // 3.5. 笔画延生连接（两组伪笔画，按开关决定是否启用）
-                const addBridges = (front, back) => {
-                    const performUnion = (panel, bridge) => {
-                        try {
-                            const result = panel.unite(bridge.clone({ insert: false }));
-                            panel.remove();
-                            return result; // 绝不使用 simplify()
-                        } catch (e) { return panel; }
-                    };
-
-                    if (bridgeH1Enabled) {
-                        const h1Y = bridgeY - H / 2;
-                        const hBridge1 = new paper.Path.Rectangle({
-                            point: [bridgeH_OffsetX - bridgeH_Length / 2, h1Y - bridgeHeight / 2],
-                            size: [bridgeH_Length, bridgeHeight], insert: false
-                        });
-                        front = performUnion(front, hBridge1);
-                        back = performUnion(back, hBridge1);
-                    }
-                    if (bridgeV1Enabled) {
-                        const v1X = bridgeX - W / 2;
-                        const vBridge1 = new paper.Path.Rectangle({
-                            point: [v1X - bridgeWidth / 2, bridgeV_OffsetY - bridgeV_Length / 2],
-                            size: [bridgeWidth, bridgeV_Length], insert: false
-                        });
-                        front = performUnion(front, vBridge1);
-                        back = performUnion(back, vBridge1);
-                    }
-                    if (bridgeH2Enabled) {
-                        const h2Y = bridge2Y - H / 2;
-                        const hBridge2 = new paper.Path.Rectangle({
-                            point: [bridge2H_OffsetX - bridge2H_Length / 2, h2Y - bridge2Height / 2],
-                            size: [bridge2H_Length, bridge2Height], insert: false
-                        });
-                        front = performUnion(front, hBridge2);
-                        back = performUnion(back, hBridge2);
-                    }
-                    if (bridgeV2Enabled) {
-                        const v2X = bridge2X - W / 2;
-                        const vBridge2 = new paper.Path.Rectangle({
-                            point: [v2X - bridge2Width / 2, bridge2V_OffsetY - bridge2V_Length / 2],
-                            size: [bridge2Width, bridge2V_Length], insert: false
-                        });
-                        front = performUnion(front, vBridge2);
-                        back = performUnion(back, vBridge2);
-                    }
-
-                    return { front, back };
-                };
-
-                try {
-                    const bridged = addBridges(frontPanel, backPanel);
-                    frontPanel = bridged.front;
-                    backPanel = bridged.back;
-                } catch (e) {
-                    console.error('笔画延生连接失败:', e);
-                }
 
                 // 4. 生成内部骨架：左右两块无侧榫的侧板 + 底部带槽的大底板
                 function createSidePanel() {
